@@ -19,8 +19,12 @@ class SessionsController < ApplicationController
   end
 
   def create
+    puts 'CREATE!'
     user = if params[:google_access_token].present? && @google_plus_config.present?
       user = GooglePlusAPI.new.get_user(params[:google_access_token])
+      
+      puts user
+
       if user
         authenticate!(:google_access_token, scope: params[:user_domain].present? ?  params[:user_domain] : user.username)
       elsif user == false
