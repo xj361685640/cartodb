@@ -7,7 +7,7 @@ module CartoDB
 
     class MailNotifier
 
-      MIN_IMPORT_TIME_TO_NOTIFY = 5 * 60 # seconds
+      MIN_IMPORT_TIME_TO_NOTIFY = 10 # seconds
 
       def initialize(data_import, results, resque)
         @data_import = data_import
