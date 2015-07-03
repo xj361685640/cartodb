@@ -1,6 +1,6 @@
 // cartodb.js version: 3.15.1
 // uncompressed version: cartodb.uncompressed.js
-// sha: 53caaecb5ab9a6b50a3215718e88b9844bbde8f1
+// sha: a3916a8958cedd877a2d996c24f22f1a7991d094
 (function() {
   var root = this;
 
@@ -41276,7 +41276,7 @@ var CSS = {
 
     for (var i = cats.length - 1; i >= 0; --i) {
       if (cats[i] !== undefined && cats[i] != null) {
-        metadata.push({ title: cats[i], title_type: "string", value_type: 'color', color: "red" });
+        metadata.push({ title: cats[i], title_type: "string", value_type: 'color', color: ramps.category[i] });
       }
     }
 
