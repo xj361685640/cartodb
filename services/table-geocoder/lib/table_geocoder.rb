@@ -1,35 +1,26 @@
 # encoding: utf-8
-require_relative '../../geocoder/lib/geocoder'
+require 'uuidtools'
+require_relative '../../geocoder/lib/hires_geocoder_factory'
+require_relative '../../geocoder/lib/geocoder_config'
 require_relative 'geocoder_cache'
+require_relative 'abstract_table_geocoder'
+
 
 module CartoDB
-  class TableGeocoder
+  class TableGeocoder < AbstractTableGeocoder
 
-    attr_reader   :connection, :working_dir, :geocoder, :result, 
-                  :temp_table_name, :max_rows, :cache
+    attr_reader   :working_dir, :csv_file, :result,
+                  :max_rows, :cache
 
     attr_accessor :table_name, :formatter, :remote_id
 
     def initialize(arguments)
-      @connection  = arguments.fetch(:connection)
+      super(arguments)
       @working_dir = arguments[:working_dir] || Dir.mktmpdir
       `chmod 777 #{@working_dir}`
-      @table_name  = arguments[:table_name]
-      @qualified_table_name = arguments[:qualified_table_name]
-      @sequel_qualified_table_name = arguments[:sequel_qualified_table_name]
       @formatter   = arguments[:formatter]
       @remote_id   = arguments[:remote_id]
-      @schema      = arguments[:schema] || 'cdb'
-      @max_rows    = arguments[:max_rows] || 1000000
-      @geocoder    = CartoDB::Geocoder.new(
-        app_id:             arguments[:app_id],
-        token:              arguments[:token],
-        mailto:             arguments[:mailto],
-        dir:                @working_dir,
-        request_id:         arguments[:remote_id],
-        base_url:           arguments[:base_url],
-        non_batch_base_url: arguments[:non_batch_base_url]
-      )
+      @max_rows    = arguments.fetch(:max_rows)
       @cache       = CartoDB::GeocoderCache.new(
         connection:  connection,
         formatter:   clean_formatter,
@@ -42,59 +33,82 @@ module CartoDB
     end # initialize
 
     def run
-      add_georef_status_column
-      cache.run
-      csv_file = generate_csv
-      connection.run(
-        dataset.where('cartodb_id'.lit => dataset.select('cartodb_id'.lit))
-          .update_sql('cartodb_georef_status = false')
-      )
-      start_geocoding_job(csv_file)
+      ensure_georef_status_colummn_valid
+
+      cache.run unless cache_disabled?
+      @csv_file = generate_csv()
+      geocoder.run
+      self.remote_id = geocoder.request_id
+      process_results if geocoder.status == 'completed'
+      cache.store unless cache_disabled?
     end
 
-    def generate_csv
-      csv_file = File.join(working_dir, "wadus.csv")
-      query = dataset.limit(@max_rows - cache.hits).select_sql
-      result = connection.copy_table(connection[query], format: :csv, options: 'HEADER')
-      File.write(csv_file, result.force_encoding("UTF-8"))
-      return csv_file
-    end
-
+    # TODO: make the geocoders update status directly in the model
     def update_geocoding_status
       geocoder.update_status
       { processed_rows: geocoder.processed_rows, state: geocoder.status }
-    end
-
-    def dataset
-      connection.select("DISTINCT(#{clean_formatter}) recId, #{clean_formatter} searchText".lit)
-        .from(@sequel_qualified_table_name)
-        .limit(max_rows)
-        .where("cartodb_georef_status IS NULL".lit)
-    end
-
-    def clean_formatter
-      "trim(both from regexp_replace(regexp_replace(concat(#{formatter}), E'[\\n\\r]+', ' ', 'g'), E'\"', '', 'g'))"
     end
 
     def cancel
       geocoder.cancel
     end
 
-    def start_geocoding_job(csv_file)
-      geocoder.input_file = csv_file
-      geocoder.upload
-      self.remote_id = geocoder.request_id
-    end
-
     def process_results
-      download_results
-      deflate_results
+      download_results # TODO move to HiresBatchGeocoder
+      deflate_results # TODO move to HiresBatchGeocoder
       create_temp_table
       import_results_to_temp_table
       load_results_into_original_table
-      cache.store
+      mark_rows_not_geocoded
+    rescue Sequel::DatabaseError => e
+      if e.message =~ /canceling statement due to statement timeout/
+        # INFO: Timeouts here are not recoverable for batched geocodes, but they are for non-batched
+        # INFO: cache.store relies on having results in the target table
+        raise Carto::GeocoderErrors::TableGeocoderDbTimeoutError.new(e)
+      else
+        raise
+      end
     ensure
       drop_temp_table
+    end
+
+
+    def used_batch_request?
+      return geocoder.used_batch_request?
+    end
+
+
+    private
+
+    def geocoder
+      @geocoder ||= CartoDB::HiresGeocoderFactory.get(csv_file, working_dir)
+    end
+
+    def cache_disabled?
+      GeocoderConfig.instance.get['disable_cache'] || false
+    end
+
+    # Generate a csv input file from the geocodable rows
+    def generate_csv
+      csv_file = File.join(working_dir, "wadus.csv")
+      # INFO: we exclude inputs too short and "just digits" inputs, which will remain as georef_status = false
+      query = %Q{
+        WITH geocodable AS (
+          SELECT DISTINCT(#{clean_formatter}) recId, #{clean_formatter} searchText
+          FROM #{@qualified_table_name}
+          WHERE cartodb_georef_status IS NULL
+          LIMIT #{@max_rows - cache.hits}
+        )
+        SELECT * FROM geocodable
+        WHERE length(searchText) > 3 AND searchText !~ '^[\\d]*$'
+      }
+      result = connection.copy_table(connection[query], format: :csv, options: 'HEADER')
+      File.write(csv_file, result.force_encoding("UTF-8"))
+      return csv_file
+    end
+
+    def clean_formatter
+      "trim(both from regexp_replace(regexp_replace(concat(#{formatter}), E'[\\n\\r]+', ' ', 'g'), E'\"', '', 'g'))"
     end
 
     def download_results
@@ -113,10 +127,10 @@ module CartoDB
     def create_temp_table
       connection.run(%Q{
         CREATE TABLE #{temp_table_name} (
-          recId text, 
-          SeqNumber int, 
-          seqLength int, 
-          displayLatitude float, 
+          recId text,
+          SeqNumber int,
+          seqLength int,
+          displayLatitude float,
           displayLongitude float
         );}
       )
@@ -137,48 +151,22 @@ module CartoDB
             'POINT(' || orig.displayLongitude || ' ' ||
               orig.displayLatitude || ')', 4326
             ),
-            cartodb_georef_status = true
+            cartodb_georef_status = TRUE
         FROM #{temp_table_name} AS orig
         WHERE #{clean_formatter} = orig.recId
       })
     end
 
-    def add_georef_status_column
-      connection.run(%Q{
-        ALTER TABLE #{@qualified_table_name}
-        ADD COLUMN cartodb_georef_status BOOLEAN DEFAULT NULL
-      })
-    rescue Sequel::DatabaseError => e
-      raise unless e.message =~ /column .* of relation .* already exists/
-      cast_georef_status_column
-    end
-
-    def cast_georef_status_column
-      connection.run(%Q{
-        ALTER TABLE #{@qualified_table_name} ALTER COLUMN cartodb_georef_status
-        TYPE boolean USING cast(cartodb_georef_status as boolean)
-      })
-    rescue => e
-      raise "Error converting cartodb_georef_status to boolean, please, convert it manually or remove it."
+    def mark_rows_not_geocoded
+      connection.run(%Q{UPDATE #{@qualified_table_name} SET cartodb_georef_status = FALSE WHERE cartodb_georef_status IS NULL})
     end
 
     def temp_table_name
-      return nil unless remote_id
-      @temp_table_name = "#{@schema}.geo_#{remote_id}"
-      count = 0
-      while connection.table_exists?(@temp_table_name) do
-        count = count + 1
-        @temp_table_name = @temp_table_name.sub(/(\_\d+)*$/, "_#{count}")
-      end
-      return @temp_table_name
+      @temp_table_name ||= "#{@schema}.geo_#{UUIDTools::UUID.timestamp_create.to_s.gsub('-', '')}"
     end
 
     def deflated_results_path
       Dir[File.join(working_dir, '*_out.txt')][0]
-    end
-
-    def used_batch_request?
-      return geocoder.used_batch_request?
     end
 
   end # Geocoder

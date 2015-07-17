@@ -1,9 +1,11 @@
 # encoding: utf-8
 require_relative '../../models/map/presenter'
-require_dependency '../../lib/resque/user_jobs'
+require_dependency 'resque/user_jobs'
+require_dependency 'static_maps_url_helper'
 require_relative '../carto/admin/user_table_public_map_adapter'
 require_relative '../carto/admin/visualization_public_map_adapter'
 require_relative '../../helpers/embed_redis_cache'
+require_dependency 'static_maps_url_helper'
 
 class Admin::VisualizationsController < ApplicationController
 
@@ -36,7 +38,7 @@ class Admin::VisualizationsController < ApplicationController
     @tables_count  = current_user.tables.count
     @first_time    = !current_user.dashboard_viewed?
     @just_logged_in = !!flash['logged']
-    @google_maps_api_key = current_user.google_maps_api_key
+    @google_maps_query_string = current_user.google_maps_query_string
     current_user.view_dashboard
     update_user_last_activity
 
@@ -55,7 +57,7 @@ class Admin::VisualizationsController < ApplicationController
       end
     end
 
-    @google_maps_api_key = @visualization.user.google_maps_api_key
+    @google_maps_query_string = @visualization.user.google_maps_query_string
     @basemaps = @visualization.user.basemaps
 
     unless @visualization.has_permission?(current_user, Visualization::Member::PERMISSION_READWRITE)
@@ -136,6 +138,7 @@ class Admin::VisualizationsController < ApplicationController
 
     @name = @visualization.user.name.present? ? @visualization.user.name : @visualization.user.username.truncate(20)
     @avatar_url             = @visualization.user.avatar
+    @twitter_username       = @visualization.user.twitter_username.present? ? @visualization.user.twitter_username : nil
 
     @user_domain = user_domain_variable(request)
 
@@ -198,12 +201,26 @@ class Admin::VisualizationsController < ApplicationController
     end
 
     response.headers['X-Cache-Channel'] = "#{@visualization.varnish_key}:vizjson"
-    response.headers['Surrogate-Key'] = "#{CartoDB::SURROGATE_NAMESPACE_PUBLIC_PAGES} #{@visualization.surrogate_key}"
+
+    if @more_visualizations && @more_visualizations.length > 0
+      additional_keys = []
+      @more_visualizations.each do |vis_adapter|
+        additional_keys << vis_adapter.visualization.surrogate_key
+      end
+      additional_keys = " #{additional_keys.join(' ')}"
+    else
+       additional_keys = ''
+    end
+
+    response.headers['Surrogate-Key'] = 
+      "#{CartoDB::SURROGATE_NAMESPACE_PUBLIC_PAGES} #{@visualization.surrogate_key}#{additional_keys}"
+
     response.headers['Cache-Control']   = "no-cache,max-age=86400,must-revalidate, public"
 
     @name = @visualization.user.name.present? ? @visualization.user.name : @visualization.user.username.truncate(20)
     @avatar_url             = @visualization.user.avatar
-    @google_maps_api_key = @visualization.user.google_maps_api_key
+    @twitter_username       = @visualization.user.twitter_username.present? ? @visualization.user.twitter_username : nil
+    @google_maps_query_string = @visualization.user.google_maps_query_string
 
     @mapviews = @visualization.total_mapviews
 
@@ -472,7 +489,9 @@ class Admin::VisualizationsController < ApplicationController
       # Might be an org url, try getting the org
       organization = Organization.where(name: org_name).first
       unless organization.nil?
-        authenticated_users = request.session.select { |k,v| k.start_with?("warden.user") }.values
+        authenticated_users = request.session.select { |k, v|
+          k.start_with?("warden.user") && !k.end_with?(".session")
+        }                                    .values
         authenticated_users.each { |username|
           user = User.where(username:username).first
           if url.nil? && !user.nil? && !user.organization.nil?

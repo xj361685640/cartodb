@@ -33,9 +33,9 @@ The frontend is really standalone code, but is integrated with/served by the Rai
 CartoDB is built on top of [CartoDB.js](https://github.com/CartoDB/cartodb.js),
 which in turns depends on some common libraries, in particular worth mentioning:
 
- - [BackboneJS 0.9.2](http://htmlpreview.github.io/?https://raw.github.com/jashkenas/backbone/0.9.2/index.html).
+ - [BackboneJS 0.9.2](https://cdn.rawgit.com/jashkenas/backbone/0.9.2/index.html).
  - [jQuery 1.7.2](http://api.jquery.com/category/version/1.7/)
- - [underscore.js 1.4.4](http://htmlpreview.github.io/?https://raw.github.com/jashkenas/underscore/1.4.4/index.html)
+ - [underscore.js 1.4.4](https://cdn.rawgit.com/jashkenas/underscore/1.4.4/index.html)
 
 Source code is located at `lib/assets/javascripts`, dependencies at `vendor/assets/javascripts`.
 
@@ -96,13 +96,12 @@ After that, for typical frontend work, it's recommended to run once:
 ```bash
 grunt
 ```
-
-and then
+This will generate all necessary frontend assets, and then:
 
 ```bash
 grunt dev
 ```
-This will watch CSS and JS files and rebuild bundles automatically upon changes.
+That enables CSS and JS watchers for rebuilding bundles automatically upon changes.
 
 **Note!** Make sure `config/app_config.yml` don't contain the `app_assets` configuration, i.e.:
 

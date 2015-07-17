@@ -558,15 +558,17 @@ namespace :cartodb do
       end
     end
 
-    desc "Recreates all table triggers"
-    task :recreate_table_triggers => :environment do
-      User.where('organization_id IS NOT NULL').each do |user|
+    desc "Recreates all table triggers for non-orgs users. Optionally you can pass a username param to do this only for one user. Example: cartodb:db:recreate_table_triggers['my_username']"
+    task :recreate_table_triggers, [:username] => :environment do |t, args|
+      username = args[:username]
 
+      users = username.nil? ? User.where('organization_id IS NOT NULL') : User.where(username: username)
+      users.each do |user|
         if  user.cartodb_extension_version_pre_mu? || user.database_schema=='public'
           puts "SKIP: #{user.username} / #{user.id}"
         else
           schema_name = user.database_schema
-          Table.filter(:user_id => user.id).each do |table|
+          UserTable.filter(:user_id => user.id).each do |table|
             table_name = "#{user.database_schema}.#{table.name}"
             begin
               user.in_database do |user_db|
@@ -1070,6 +1072,26 @@ namespace :cartodb do
           end
         end
       end
+    end
+
+    desc "Assign permissions to organization shared role. See #3859 and #3881. This is used to upgrade existing organizations to new permission schema. You can optionally speciy an organization name to restrict the execution to it."
+    task :assign_org_permissions_to_org_role, [:organization_name] => :environment do |t, args|
+      organizations = args[:organization_name].present? ? Organization.where(name: args[:organization_name]).all : Organization.all
+      puts "Updating #{organizations.count} organizations"
+      organizations.each { |o|
+        owner = o.owner
+        if owner
+          puts "#{o.name}\t#{o.id}\tOwner: #{owner.username}\t#{owner.id}"
+          begin
+            owner.setup_organization_role_permissions
+          rescue => e
+            puts "Error: #{e.message}"
+            CartoDB.notify_exception(e)
+          end
+        else
+          puts "#{o.name}\t#{o.id}\t Has no owner, skipping"
+        end
+      }
     end
 
   end

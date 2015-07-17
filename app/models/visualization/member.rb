@@ -247,7 +247,7 @@ module CartoDB
 
         support_tables.delete_all
 
-        invalidate_cache(update_named_maps = false)
+        invalidate_cache
         overlays.destroy
         layers(:base).map(&:destroy)
         layers(:cartodb).map(&:destroy)
@@ -420,17 +420,10 @@ module CartoDB
         derived? && !single_data_layer?
       end
 
-      def invalidate_cache(update_named_maps=true)
+      def invalidate_cache
         invalidate_redis_cache
         invalidate_varnish_cache
-        if update_named_maps && (type == TYPE_CANONICAL || type == TYPE_DERIVED || organization?)
-          save_named_map
-        end
         parent.invalidate_cache unless parent_id.nil?
-      end
-
-      def invalidate_all_varnish_vizsjon_keys
-        user.invalidate_varnish_cache({regex: '.*:vizjson'})
       end
 
       def has_private_tables?
@@ -441,7 +434,7 @@ module CartoDB
         has_private_tables
       end
 
-      # Despite storing always a named map, no need to retrievfe it for "public" visualizations
+      # Despite storing always a named map, no need to retrieve it for "public" visualizations
       def retrieve_named_map?
         password_protected? || has_private_tables?
       end
@@ -449,7 +442,7 @@ module CartoDB
       def get_named_map
         return false if type == TYPE_REMOTE
 
-        data = named_maps.get(CartoDB::NamedMapsWrapper::NamedMap.normalize_name(id))
+        data = named_maps.get(CartoDB::NamedMapsWrapper::NamedMap.template_name(id))
         if data.nil?
           false
         else
@@ -614,6 +607,17 @@ module CartoDB
         embed_redis_cache.invalidate(self.id)
       end
 
+      # INFO: Handles doing nothing if instance is not eligible to have a named map
+      def save_named_map
+        return if type == TYPE_REMOTE
+
+        named_map = get_named_map
+        if named_map
+          update_named_map(named_map)
+        else
+          create_named_map
+        end
+      end
 
       private
 
@@ -630,8 +634,7 @@ module CartoDB
           user_name: user.username,
           user_api_key: user.api_key,
           user: user,
-          viewer_user: user,
-          dynamic_cdn_enabled: user != nil ? user.dynamic_cdn_enabled: false
+          viewer_user: user
         }.merge(options)
         VizJSON.new(self, vizjson_options, configuration).to_poro
       end
@@ -683,7 +686,6 @@ module CartoDB
         # now we need to purgue everything to avoid cached stale data or public->priv still showing scenarios
         if name_changed || privacy_changed || table_privacy_changed || dirty
           invalidate_cache
-          invalidate_all_varnish_vizsjon_keys
         end
 
         set_timestamps
@@ -706,13 +708,11 @@ module CartoDB
           permission.clear
         end
 
-        if type == TYPE_REMOTE
-          propagate_privacy_and_name_to(table) if table and propagate_changes
-        elsif type == TYPE_CANONICAL
-          save_named_map
+        save_named_map
+
+        if type == TYPE_REMOTE || type == TYPE_CANONICAL
           propagate_privacy_and_name_to(table) if table and propagate_changes
         else
-          save_named_map
           propagate_name_to(table) if !table.nil? and propagate_changes
         end
       end
@@ -742,15 +742,6 @@ module CartoDB
           )
         end
         @named_maps
-      end
-
-      def save_named_map
-        named_map = get_named_map
-        if named_map
-          update_named_map(named_map)
-        else
-          create_named_map
-        end
       end
 
       def create_named_map

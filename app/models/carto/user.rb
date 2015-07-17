@@ -33,8 +33,10 @@ class Carto::User < ActiveRecord::Base
 
   # INFO: select filter is done for security and performance reasons. Add new columns if needed.
   DEFAULT_SELECT = "users.email, users.username, users.admin, users.organization_id, users.id, users.avatar_url," + 
-                   "users.api_key, users.dynamic_cdn_enabled, users.database_schema, users.database_name, users.name," +
+                   "users.api_key, users.database_schema, users.database_name, users.name," +
                    "users.disqus_shortname, users.account_type, users.twitter_username, users.google_maps_key"
+
+  SELECT_WITH_DATABASE = DEFAULT_SELECT + ", users.quota_in_bytes, users.database_host"
 
   attr_reader :password
 
@@ -120,10 +122,10 @@ class Carto::User < ActiveRecord::Base
   end
 
   def sql_safe_database_schema
-    "\"#{self.database_schema}\""
+    self.database_schema.include?('-') ? "\"#{self.database_schema}\"" : self.database_schema
   end
 
- # returns google maps api key. If the user is in an organization and 
+  # returns google maps api key. If the user is in an organization and 
   # that organization has api key it's used
   def google_maps_api_key
     if has_organization?
@@ -131,6 +133,35 @@ class Carto::User < ActiveRecord::Base
     else
       self.google_maps_key
     end
+  end
+
+  def twitter_datasource_enabled
+    if has_organization?
+      organization.twitter_datasource_enabled || read_attribute(:twitter_datasource_enabled)
+    else
+      read_attribute(:twitter_datasource_enabled)
+    end
+  end
+
+  # TODO: this is the correct name for what's stored in the model, refactor changing that name
+  alias_method :google_maps_query_string, :google_maps_api_key
+
+  # Returns the google maps private key. If the user is in an organization and
+  # that organization has a private key, the org's private key is returned.
+  def google_maps_private_key
+    if has_organization?
+      organization.google_maps_private_key || read_attribute(:google_maps_private_key)
+    else
+      read_attribute(:google_maps_private_key)
+    end
+  end
+
+  def google_maps_geocoder_enabled?
+    google_maps_private_key.present? && google_maps_client_id.present?
+  end
+
+  def google_maps_client_id
+    Rack::Utils.parse_nested_query(google_maps_query_string)['client'] if google_maps_query_string
   end
 
   # returnd a list of basemaps enabled for the user
@@ -165,7 +196,12 @@ class Carto::User < ActiveRecord::Base
   end
 
   def remaining_geocoding_quota(options = {})
-    geocoding_quota - get_geocoding_calls(options)
+    if organization.present?
+      remaining = organization.geocoding_quota.to_i - organization.get_geocoding_calls(options)
+    else
+      remaining = geocoding_quota - get_geocoding_calls(options)
+    end
+    (remaining > 0 ? remaining : 0)
   end
 
   def oauth_for_service(service)
@@ -267,7 +303,11 @@ class Carto::User < ActiveRecord::Base
   end
 
   def import_quota
-    self.account_type.downcase == 'free' ? 1 : 3
+    if self.max_concurrent_import_count.nil?
+      self.account_type.downcase == 'free' ? 1 : 3
+    else
+      self.max_concurrent_import_count
+    end
   end
 
   def arcgis_datasource_enabled?
@@ -283,6 +323,10 @@ class Carto::User < ActiveRecord::Base
 
     return true if self.private_tables_enabled # Note private_tables_enabled => private_maps_enabled
     return false
+  end
+
+  def self.columns
+    super.reject { |c| c.name == "dynamic_cdn_enabled" }
   end
 
 end

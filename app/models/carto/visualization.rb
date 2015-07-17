@@ -43,6 +43,10 @@ class Carto::Visualization < ActiveRecord::Base
 
   belongs_to :map
 
+  def ==(other_visualization)
+    self.id == other_visualization.id
+  end
+
   def size
     # Only canonical visualizations (Datasets) have a related table and then count against disk quota,
     # but we want to not break and even allow ordering by size multiple types
@@ -137,7 +141,7 @@ class Carto::Visualization < ActiveRecord::Base
     end
   end
 
-  # Despite storing always a named map, no need to retrievfe it for "public" visualizations
+  # Despite storing always a named map, no need to retrieve it for "public" visualizations
   def retrieve_named_map?
     password_protected? || has_private_tables?
   end
@@ -230,13 +234,16 @@ class Carto::Visualization < ActiveRecord::Base
     table.nil? ? nil : table.service
   end
 
+  def has_read_permission?(user)
+    user && (is_owner_user?(user) || (permission && permission.user_has_read_permission?(user)))
+  end
+
   private
 
-  # INFO: refactor from Visualization::Member.retrieve_named_map
   def get_named_map
-    # TODO: WIP
     return nil if type == TYPE_REMOTE
-    named_maps.get(CartoDB::NamedMapsWrapper::NamedMap.normalize_name(id))
+    data = named_maps.get(CartoDB::NamedMapsWrapper::NamedMap.template_name(id))
+    data.nil? ? false : data
   end
 
   def named_maps(force_init = false)
@@ -294,10 +301,6 @@ class Carto::Visualization < ActiveRecord::Base
 
   def get_related_visualizations
     Carto::Visualization.where(map_id: related_tables.collect(&:map_id), type: TYPE_CANONICAL).all
-  end
-
-  def has_read_permission?(user)
-    user && (is_owner_user?(user) || (permission && permission.user_has_read_permission?(user)))
   end
 
   def has_write_permission?(user)
