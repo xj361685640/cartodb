@@ -12,8 +12,18 @@ module Carto
       # Reset old connections to make sure changes apply.
       # NOTE: This assumes it's being called from a Resque job
       user.reset_pooled_connections
+      log = params.fetch(:log)
+      log.append 'TableGeocoderFactory.get()'
+      log.append "params: #{params.select{|k| k != :log}.to_s}"
 
-      user_connection = user.in_database
+      if user == table_service.owner
+        user_connection = user.in_database
+      else
+        if !table_service.table_visualization.has_permission?(user, CartoDB::Visualization::Member::PERMISSION_READWRITE)
+          raise 'Insufficient permissions on table'
+        end
+        user_connection = table_service.owner.in_database
+      end
 
       instance_config = cartodb_geocoder_config
         .deep_symbolize_keys
@@ -43,6 +53,7 @@ module Carto
         geocoder_class = CartoDB::InternalGeocoder::Geocoder
       end
 
+      log.append "geocoder_class = #{geocoder_class.to_s}"
       return geocoder_class.new(instance_config)
     end
 

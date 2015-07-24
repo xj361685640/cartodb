@@ -40,11 +40,13 @@ CartoDB::Application.routes.draw do
     get    '(/user/:user_domain)(/u/:user_domain)/organization'                 => 'organizations#show',            as: :organization
     get    '(/user/:user_domain)(/u/:user_domain)/organization/settings'        => 'organizations#settings',        as: :organization_settings
     put    '(/user/:user_domain)(/u/:user_domain)/organization/settings'        => 'organizations#settings_update', as: :organization_settings_update
+    post '(/user/:user_domain)(/u/:user_domain)/organization/regenerate_api_keys'       => 'organizations#regenerate_all_api_keys', as: :regenerate_organization_users_api_key
     # Organization users management
     get    '(/user/:user_domain)(/u/:user_domain)/organization/users/:id/edit'  => 'organization_users#edit',    as: :edit_organization_user,   constraints: { id: /[0-z\.\-]+/ }
     put    '(/user/:user_domain)(/u/:user_domain)/organization/users/:id'       => 'organization_users#update',  as: :update_organization_user, constraints: { id: /[0-z\.\-]+/ }
     post   '(/user/:user_domain)(/u/:user_domain)/organization/users'           => 'organization_users#create',  as: :create_organization_user
     delete '(/user/:user_domain)(/u/:user_domain)/organization/users/:id'       => 'organization_users#destroy', as: :delete_organization_user, constraints: { id: /[0-z\.\-]+/ }
+    post '(/user/:user_domain)(/u/:user_domain)/organization/users/:id/regenerate_api_key'       => 'organization_users#regenerate_api_key', as: :regenerate_organization_user_api_key, constraints: { id: /[^\/]+/ }
     get    '(/user/:user_domain)(/u/:user_domain)/organization/users/new'       => 'organization_users#new',     as: :new_organization_user
 
     # User profile and account pages
@@ -413,7 +415,7 @@ CartoDB::Application.routes.draw do
     get    '(/user/:user_domain)(/u/:user_domain)/api/v1/maps/:map_id/layers'     => 'layers#index',   as: :api_v1_maps_layers_index
     get    '(/user/:user_domain)(/u/:user_domain)/api/v1/maps/:map_id/layers/:id' => 'layers#show',    as: :api_v1_maps_layers_show
     post   '(/user/:user_domain)(/u/:user_domain)/api/v1/maps/:map_id/layers'     => 'layers#create',  as: :api_v1_maps_layers_create
-    put    '(/user/:user_domain)(/u/:user_domain)/api/v1/maps/:map_id/layers/:id' => 'layers#update',  as: :api_v1_maps_layers_update
+    put    '(/user/:user_domain)(/u/:user_domain)/api/v1/maps/:map_id/layers(/:id)' => 'layers#update',  as: :api_v1_maps_layers_update
     delete '(/user/:user_domain)(/u/:user_domain)/api/v1/maps/:map_id/layers/:id' => 'layers#destroy', as: :api_v1_maps_layers_destroy
 
     # Geocodings
@@ -473,6 +475,8 @@ CartoDB::Application.routes.draw do
         get '/:id/dump' => 'users#dump'
         get '/:id/data_imports' => 'users#data_imports'
         get '/:id/data_imports/:data_import_id' => 'users#data_import'
+        get '/:id/synchronizations' => 'users#synchronizations'
+        get '/:id/synchronizations/:synchronization_id' => 'users#synchronization'
       end
     end
     resources :organizations
