@@ -109,79 +109,102 @@
 
   display: none;
 
-  &.selected {
+  &.is-selected {
     border: 3px dashed rgba(#fff, .5);
   }
 
-  &.selected.white-box {
-    border-color: rgba(#000, .5);
+  .TextEditor {
+    display: none;
+    width: 100%;
+    border: none;
+    padding: 5px;
+    @include box-sizing(border-box);
+    background: transparent;
+    color: #fff;
+    outline: none;
+    resize: none;
+  }
 
-    &.editable .text { 
-      color: #000!important;
-    }
+  &.is-editable .TextEditor {
+    display: block;
+  }
+
+  &.is-editable .text {
+    display: none;
+  }
+
+  &.is-selected.white-box {
+    border-color: rgba(#000, .5);
 
     .hint {
       color: #000;
       @include opacity(1);
     }
-
   }
 
-    &.selected.border-dark {
-      border-color: rgba(#000, .5);
+  &.is-selected.border-dark {
+    border-color: rgba(#000, .5);
 
-      .hint { 
-        color: #000;
-        @include opacity(1);
-      }
+    .hint { 
+      color: #000;
+      @include opacity(1);
     }
+  }
 
-  .content > .text { 
+  .content > .text,
+  .content > .TextEditor { 
     font-family: 'Helvetica Neue', Helvetica, sans-serif; font-weight: 400;
     strong { font-weight: 700; }
   }
 
-  &.droid .content > .text { 
-    font-family: 'Droid Sans', serif; font-weight: 400;
+  &.droid .content > .text,
+  &.droid .content > .TextEditor {
+    font-family: 'Droid Sans', serif; 
+    font-weight: 400;
     strong { font-weight: 700; }
   }
 
-  &.roboto .content > .text {
+  &.roboto .content > .text,
+  &.roboto .content > .TextEditor {
     font-family: 'Roboto Slab', serif; font-weight: 400;
     strong { font-weight: 700; }
   }
 
-  &.vollkorn .content > .text { 
+  &.vollkorn .content > .text,
+  &.vollkorn .content > .TextEditor { 
     font-family: 'Vollkorn', serif; font-weight: 400;
     strong { font-weight: 700; }
   }
 
-  &.open_sans .content > .text { 
+  &.open_sans .content > .text,
+  &.open_sans .content > .TextEditor { 
     font-family: 'Open Sans', sans-serif; font-weight: 400;
     strong { font-weight: 700; }
   }
 
-  &.lato .content > .text { 
+  &.lato .content > .text,
+  &.lato .content > .TextEditor { 
     font-family: 'Lato', sans-serif; font-weight: 400;
     strong { font-weight: 700; }
   }
 
-  &.graduate .content > .text { 
+  &.graduate .content > .text,
+  &.graduate .content > .TextEditor { 
     font-family: 'Graduate', sans-serif; font-weight: 400;
     strong { font-weight: 700; }
   }
 
-  &.old_standard_tt .content > .text { 
+  &.old_standard_tt .content > .text,
+  &.old_standard_tt .content > .TextEditor { 
     font-family: 'Old Standard TT', sans-serif; font-weight: 400;
     strong { font-weight: 700; }
   }
 
-  &.gravitas_one .content > .text { 
+  &.gravitas_one .content > .text,
+  &.gravitas_one .content > .TextEditor { 
     font-family: 'Gravitas One', sans-serif; font-weight: 400;
     strong { font-weight: 700; }
   }
-
-
 }
 
 .cartodb-logo {
