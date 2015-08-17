@@ -1,0 +1,10 @@
+@import "../../../../variables/mixins";
+
+.TwitterCategoryInput {
+  @include flex(1);
+}
+
+.TwitterCategoryColorPicker {
+  z-index: 2;
+  margin-right: 10px;
+}
