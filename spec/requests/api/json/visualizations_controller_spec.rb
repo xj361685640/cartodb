@@ -17,17 +17,19 @@ describe Api::Json::VisualizationsController do
   end
 
   after(:all) do
+    stub_named_maps_calls
     @user.destroy
   end
 
   # let(:params) { { api_key: @user.api_key } }
 
   before(:each) do
-    CartoDB::NamedMapsWrapper::NamedMaps.any_instance.stubs(:get => nil, :create => true, :update => true, :delete => true)
+    stub_named_maps_calls
     host! "#{@user.username}.localhost.lan"
   end
 
   after(:each) do
+    stub_named_maps_calls
     delete_user_data @user
   end
 
@@ -39,7 +41,8 @@ describe Api::Json::VisualizationsController do
 
     it "when a map is liked should send an email to the owner" do
       user_owner = create_user
-      vis = new_table({user_id: user_owner.id, privacy: ::UserTable::PRIVACY_PUBLIC}).save.reload.table_visualization
+      table = new_table({user_id: user_owner.id, privacy: ::UserTable::PRIVACY_PUBLIC}).save.reload
+      vis = table.create_derived_visualization
       Resque.expects(:enqueue).with(::Resque::UserJobs::Mail::MapLiked, vis.id, @user.id, kind_of(String)).returns(true)
       post_json api_v1_visualizations_add_like_url({
           id: vis.id
@@ -49,8 +52,30 @@ describe Api::Json::VisualizationsController do
     end
 
     it "when a map is liked by the owner, the email should not be sent" do
-      vis = new_table({user_id: @user.id, privacy: ::UserTable::PRIVACY_PUBLIC}).save.reload.table_visualization
+      table = new_table({user_id: @user.id, privacy: ::UserTable::PRIVACY_PUBLIC}).save.reload
+      vis = table.create_derived_visualization
       Resque.expects(:enqueue).with(::Resque::UserJobs::Mail::MapLiked, vis.id, @user.id, kind_of(String)).never
+      post_json api_v1_visualizations_add_like_url({
+          id: vis.id
+        }) do |response|
+        response.status.should be_success
+      end
+    end
+
+    it "when a dataset is liked should send an email to the owner" do
+      user_owner = create_user
+      vis = new_table({user_id: user_owner.id, privacy: ::UserTable::PRIVACY_PUBLIC}).save.reload.table_visualization
+      Resque.expects(:enqueue).with(::Resque::UserJobs::Mail::TableLiked, vis.id, @user.id, kind_of(String)).returns(true)
+      post_json api_v1_visualizations_add_like_url({
+          id: vis.id
+        }) do |response|
+        response.status.should be_success
+      end
+    end
+
+    it "when a dataset is liked by the owner, the email should not be sent" do
+      vis = new_table({user_id: @user.id, privacy: ::UserTable::PRIVACY_PUBLIC}).save.reload.table_visualization
+      Resque.expects(:enqueue).with(::Resque::UserJobs::Mail::TableLiked, vis.id, @user.id, kind_of(String)).never
       post_json api_v1_visualizations_add_like_url({
           id: vis.id
         }) do |response|
