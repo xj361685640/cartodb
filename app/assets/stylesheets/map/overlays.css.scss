@@ -136,7 +136,7 @@
   &.is-selected.white-box {
     border-color: rgba(#000, .5);
 
-    .hint {
+    .Hint {
       color: #000;
       @include opacity(1);
     }
@@ -145,7 +145,7 @@
   &.is-selected.border-dark {
     border-color: rgba(#000, .5);
 
-    .hint { 
+    .Hint { 
       color: #000;
       @include opacity(1);
     }
@@ -324,7 +324,7 @@
     background:rgba(#333, .7);
   }
 
-  .hint {
+  .Hint {
     display:none;
 
     margin: 2px 1px 0 0;
