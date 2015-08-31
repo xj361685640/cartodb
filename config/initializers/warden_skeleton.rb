@@ -24,8 +24,9 @@ Warden::Strategies.add(:saml_header) do
   end
 
   def username_from_saml
-    # TODO: extract the username from request.headers or params
-    User.first.username
+  # TODO: extract the username from request.headers or params
+
+    User.where(organization_id: nil).first.username
   end
 
 end
