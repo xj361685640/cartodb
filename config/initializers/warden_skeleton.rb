@@ -25,7 +25,7 @@ Warden::Strategies.add(:saml_header) do
 
   def username_from_saml
     # TODO: extract the username from request.headers or params
-    'central-user-1'
+    User.first.username
   end
 
 end
