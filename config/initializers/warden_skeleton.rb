@@ -19,13 +19,16 @@ Warden::Strategies.add(:saml_header) do
   end
 
   def authenticate!
-    user = User.where(username: username_from_saml).first
+    user = User.where(username: SamlAuthenticator.username_from_saml).first
     user ? success!(user) : fail!
   end
 
-  def username_from_saml
-  # TODO: extract the username from request.headers or params
+end
 
+class SamlAuthenticator
+
+  def self.username_from_saml
+    # TODO: extract the username from request.headers or params
     User.where(organization_id: nil).first.username
   end
 
