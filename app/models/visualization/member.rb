@@ -641,10 +641,6 @@ module CartoDB
         end
       end
 
-      def attributions_from_derived_visualizations
-        related_visualizations.map(&:attributions).compact
-      end
-
       private
 
       attr_reader   :repository, :name_checker, :validator
