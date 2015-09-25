@@ -47,6 +47,8 @@ class Carto::Visualization < ActiveRecord::Base
 
   has_one :synchronization, class_name: Carto::Synchronization
 
+  has_many :embeddings
+
   def ==(other_visualization)
     self.id == other_visualization.id
   end

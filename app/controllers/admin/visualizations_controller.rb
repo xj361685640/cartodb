@@ -368,6 +368,16 @@ class Admin::VisualizationsController < Admin::AdminController
   end
 
   def embed_map
+    if !request.referer.nil?
+      embedding = self.embeddings.find(:first, :conditions => "url = '#{request.referer}'")
+      if embedding.nil?
+        self.embeddings.create(:url => request.referer, :count => 1)
+      else
+        embedding.count += 1
+        embedding.save
+      end
+    end
+
     if request.format == 'text/javascript'
       error_message = "/* Javascript embeds  are deprecated, please use the html iframe instead */"
       return render inline: error_message, status: 400
