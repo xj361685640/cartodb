@@ -369,9 +369,11 @@ class Admin::VisualizationsController < Admin::AdminController
 
   def embed_map
     if !request.referer.nil?
-      embedding = self.embeddings.find(:first, :conditions => "url = '#{request.referer}'")
+      visualization = Carto::Visualization.find(:first, :conditions => "id = '#{params[:id]}'")
+      embedding = visualization.embeddings.find(:first, :conditions => "url = '#{request.referer}'")
+
       if embedding.nil?
-        self.embeddings.create(:url => request.referer, :count => 1)
+        visualization.embeddings.create(:url => request.referer, :count => 1)
       else
         embedding.count += 1
         embedding.save
