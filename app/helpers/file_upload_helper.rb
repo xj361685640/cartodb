@@ -71,9 +71,14 @@ module  FileUploadHelper
     end
 
     def upload_file_to_s3(filepath, filename, token, s3_config)
+      # @see http://docs.aws.amazon.com/AWSRubySDK/latest/AWS.html#config-class_method
       AWS.config(
         access_key_id: s3_config['access_key_id'],
-        secret_access_key: s3_config['secret_access_key']
+        secret_access_key: s3_config['secret_access_key'],
+        # All following are in seconds. Values are the same as theorical defaults
+        http_idle_timeout: 60,
+        http_open_timeout: 15,
+        http_read_timeout: 60
       )
       s3_bucket = AWS::S3.new.buckets[s3_config['bucket_name']]
 
@@ -82,7 +87,7 @@ module  FileUploadHelper
 
       o.write(Pathname.new(filepath), { acl: :authenticated_read })
 
-      o.url_for(:get, expires: s3_config['url_ttl']).to_s
+      o.url_for(:get, expires: s3_config['url_ttl'], secure: true).to_s
     end
 
     def save_body_to_file(params, request, random_token, filename)
