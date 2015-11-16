@@ -393,7 +393,7 @@ module CartoDB
           if ids.length == 1
             ids_field = {objectIds: ids.first}
           else
-            ids_field = {where: "OBJECTID >=#{ids.min} AND OBJECTID <=#{ids.max}"}
+            ids_field = {where: "OBJECTID >=#{ids.first} AND OBJECTID <=#{ids.last}"}
           end
 
           prepared_fields = Addressable::URI.encode(fields.map { |field| "#{field[:name]}" }.join(','))
