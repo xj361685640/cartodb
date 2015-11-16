@@ -294,6 +294,28 @@ describe Url::ArcGIS do
       respose_ids.should eq expected_ids
     end
 
+    it 'tests the get_ids_list() private method on out-of-order ids' do
+      arcgis = Url::ArcGIS.get_new(@user)
+
+      id = arcgis.send(:sanitize_id, @url)
+
+      Typhoeus.stub(/\/arcgis\/rest\//) do |request|
+        body = File.read(File.join(File.dirname(__FILE__), "../fixtures/arcgis_unordered_ids_list.json"))
+        Typhoeus::Response.new(
+          code: 200,
+          headers: { 'Content-Type' => 'application/json' },
+          body: body
+        )
+      end
+
+      expected_ids = [1,2,3,4,5,6,7,8,9,10]
+
+      respose_ids = arcgis.send(:get_ids_list, id)
+
+      respose_ids.nil?.should be false
+      respose_ids.should eq expected_ids
+    end
+
     it 'tests the get_by_ids() private method with error scenarios' do
       arcgis = Url::ArcGIS.get_new(@user)
 
@@ -425,7 +447,7 @@ describe Url::ArcGIS do
       end
 
       Typhoeus.stub(/\/arcgis\/rest\/(.*)query$/) do |response|
-        if response.options[:body][:objectIds].to_i == 1
+        if response.options[:body][:objectIds].to_i != 0 # == 1
           # First item fetch of a layer
           body = File.read(File.join(File.dirname(__FILE__), "../fixtures/arcgis_data_01.json"))
           body = ::JSON.parse(body)
@@ -492,4 +514,3 @@ describe Url::ArcGIS do
     end
   end
 end
-
