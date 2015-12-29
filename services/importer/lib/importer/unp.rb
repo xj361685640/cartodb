@@ -11,8 +11,6 @@ require_relative './osm_splitter'
 module CartoDB
   module Importer2
     class Unp
-      HIDDEN_FILE_REGEX     = /^(\.|\_{2})/
-      UNP_READ_ERROR_REGEX  = /.*Cannot read.*/
       COMPRESSED_EXTENSIONS = %w{ .zip .gz .tgz .tar.gz .bz2 .tar .kmz .rar }
       SUPPORTED_FORMATS     = %w{
         .csv .shp .ods .xls .xlsx .tif .tiff .kml .kmz
@@ -40,6 +38,7 @@ module CartoDB
       def run(path)
         return without_unpacking(path) unless compressed?(path)
         extract(path)
+        normalize_filenames(temporary_directory)
         crawl(temporary_directory).each { |dir_path| process(dir_path) }
         @source_files = split(source_files)
         self
@@ -63,16 +62,23 @@ module CartoDB
 
       def crawl(path, files=[])
         Dir.foreach(path) do |subpath|
-          next if hidden?(subpath)
-          next if subpath =~ /.*readme.*\.txt/i
-          next if subpath =~ /\.version\.txt/i
+          downcased_filename = subpath.downcase
+          next if hidden?(downcased_filename)
+          next if downcased_filename.end_with?("txt") && downcased_filename.include?("readme")
+          next if downcased_filename.end_with?(".version.txt")
 
-          fullpath = normalize("#{path}/#{subpath}")
+          fullpath = "#{path}/#{subpath}"
           (crawl(fullpath, files) and next) if File.directory?(fullpath)
           files.push(fullpath)
         end
 
         files
+      end
+
+      def normalize_filenames(path)
+        Dir.foreach(path) do |subpath|
+          normalize("#{path}/#{subpath}")
+        end
       end
 
       def extract(path)
@@ -141,7 +147,7 @@ module CartoDB
       end
 
       def underscore(filename)
-        filename.encode('UTF-8')
+        filename.encode('ASCII', invalid: :replace, undef: :replace, replace: '')
           .gsub(' ', '_')
           .gsub(/\(/, '')
           .gsub(/\)/, '')
@@ -173,11 +179,11 @@ module CartoDB
       end
 
       def hidden?(name)
-        !!(name =~ HIDDEN_FILE_REGEX)
+        name.start_with?(".", "__")
       end
 
       def unp_failure?(output, exit_code)
-        !!(output =~ UNP_READ_ERROR_REGEX) || (exit_code != 0)
+        (exit_code != 0)
       end
 
       # Return a new temporary file contained inside a tmp subfolder
