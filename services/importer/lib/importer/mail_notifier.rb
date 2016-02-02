@@ -55,7 +55,9 @@ module CartoDB
         else
           # This case happens before process the files when there
           # is no file stats
-          files << File.basename(data_import.service_item_id)
+          if data_import.service_item_id && data_import.service_item_id != ''
+            files << File.basename(data_import.service_item_id)
+          end
         end
 
         files
@@ -67,4 +69,3 @@ module CartoDB
     end
   end
 end
-
