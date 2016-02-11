@@ -2,7 +2,7 @@ REV=$(shell git rev-parse HEAD)
 RUBY_MAJOR=$(shell ruby -e "puts RUBY_VERSION" | cut -d. -f1)
 
 all:
-	RAILS_ENV=test bundle install
+	bundle install
 	# I cannot remmeber why gdal is being skipped from this list...
 	cat python_requirements.txt | grep -v gdal | sudo pip install -r /dev/stdin
 	npm install
@@ -239,25 +239,25 @@ endif
 	# TODO skip this if db already exists ?
 	# Clean DB connections before drop test DB
 	psql -U postgres -c "select pg_terminate_backend(pid) from pg_stat_activity where datname='carto_db_test'"
-	MOCHA_OPTIONS=skip_integration RAILS_ENV=test bundle exec rake cartodb:test:prepare --trace
+	MOCHA_OPTIONS=skip_integration bundle exec rake cartodb:test:prepare --trace
 
 # TODO: Ongoing removal of groups, that's the reason of holes in numbering
 check-1:
-	RAILS_ENV=test bundle exec zeus rspec $(WORKING_SPECS_1)
+	bundle exec zeus rspec $(WORKING_SPECS_1)
 check-2:
-	RAILS_ENV=test bundle exec zeus rspec $(WORKING_SPECS_2)
+	bundle exec zeus rspec $(WORKING_SPECS_2)
 check-4:
-	RAILS_ENV=test bundle exec zeus rspec $(WORKING_SPECS_4)
+	bundle exec zeus rspec $(WORKING_SPECS_4)
 check-5:
-	RAILS_ENV=test bundle exec zeus rspec $(WORKING_SPECS_5)
+	bundle exec zeus rspec $(WORKING_SPECS_5)
 check-7:
-	RAILS_ENV=test bundle exec zeus rspec $(WORKING_SPECS_7)
+	bundle exec zeus rspec $(WORKING_SPECS_7)
 check-9:
-	RAILS_ENV=test bundle exec zeus rspec $(WORKING_SPECS_9)
+	bundle exec zeus rspec $(WORKING_SPECS_9)
 check-carto-db-class:
-	RAILS_ENV=test bundle exec zeus rspec $(WORKING_SPECS_carto_db_class)
+	bundle exec zeus rspec $(WORKING_SPECS_carto_db_class)
 check-integrations:
-	RAILS_ENV=test bundle exec zeus rspec $(WORKING_SPECS_INTEGRATIONS)
+	bundle exec zeus rspec $(WORKING_SPECS_INTEGRATIONS)
 
 check-external: prepare-test-db check-integrations
 
