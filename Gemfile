@@ -98,6 +98,7 @@ group :test do
   # Need to use specific branch from this fork as original gem is broken and outdated
   gem 'fake_net_ldap', git: 'https://github.com/kuldeepaggarwal/fake_net_ldap.git', :branch => 'fix-responder'
   gem 'mock_redis'
+  gem 'zeus'
 end
 
 group :development, :test do
@@ -108,7 +109,6 @@ group :development, :test do
 
   # Server
   gem 'thin',                           require: false
-  gem 'zeus'
 end
 
 # segment metrics
