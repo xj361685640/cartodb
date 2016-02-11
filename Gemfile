@@ -108,6 +108,7 @@ group :development, :test do
 
   # Server
   gem 'thin',                           require: false
+  gem 'zeus'
 end
 
 # segment metrics
