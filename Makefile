@@ -243,21 +243,21 @@ endif
 
 # TODO: Ongoing removal of groups, that's the reason of holes in numbering
 check-1:
-	RAILS_ENV=test bundle exec zeus $(WORKING_SPECS_1)
+	RAILS_ENV=test bundle exec zeus rspec $(WORKING_SPECS_1)
 check-2:
-	RAILS_ENV=test bundle exec zeus $(WORKING_SPECS_2)
+	RAILS_ENV=test bundle exec zeus rspec $(WORKING_SPECS_2)
 check-4:
-	RAILS_ENV=test bundle exec zeus $(WORKING_SPECS_4)
+	RAILS_ENV=test bundle exec zeus rspec $(WORKING_SPECS_4)
 check-5:
-	RAILS_ENV=test bundle exec zeus $(WORKING_SPECS_5)
+	RAILS_ENV=test bundle exec zeus rspec $(WORKING_SPECS_5)
 check-7:
-	RAILS_ENV=test bundle exec zeus $(WORKING_SPECS_7)
+	RAILS_ENV=test bundle exec zeus rspec $(WORKING_SPECS_7)
 check-9:
-	RAILS_ENV=test bundle exec zeus $(WORKING_SPECS_9)
+	RAILS_ENV=test bundle exec zeus rspec $(WORKING_SPECS_9)
 check-carto-db-class:
-	RAILS_ENV=test bundle exec zeus $(WORKING_SPECS_carto_db_class)
+	RAILS_ENV=test bundle exec zeus rspec $(WORKING_SPECS_carto_db_class)
 check-integrations:
-	RAILS_ENV=test bundle exec zeus $(WORKING_SPECS_INTEGRATIONS)
+	RAILS_ENV=test bundle exec zeus rspec $(WORKING_SPECS_INTEGRATIONS)
 
 check-external: prepare-test-db check-integrations
 
