@@ -126,7 +126,7 @@ module CartoDB
       end
 
       def drop(table_name)
-        database.execute(%(SELECT CDB_DropOverviews('#{table_name}'::regclass)))
+        # database.execute(%(SELECT CDB_DropOverviews('#{table_name}'::regclass)))
         database.execute(%(DROP TABLE #{table_name}))
       rescue
         self

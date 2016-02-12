@@ -11,17 +11,19 @@ module CartoDB
         @parent_id = config.fetch(:parent_id, nil)
         @parent_kind = config.fetch(:parent_kind, nil)
         @public_user_roles_list = config.fetch(:public_user_roles)
-        @tables_list = nil
+        reset
       end
 
       def reset
         @tables_list = nil
+        @parent_name = nil
       end
 
       # Only intended to be used if from the Visualization Relator (who will set the parent)
       def load_actual_list(parent_name=nil)
         return [] if @parent_id.nil? || @parent_kind != Visualization::Member::KIND_RASTER
         parent = Visualization::Member.new(id:@parent_id).fetch
+        @parent_name = parent_name || parent.name
         table_data = @database.fetch(%Q{
           SELECT o_table_catalog AS catalog, o_table_schema AS schema, o_table_name AS name
           FROM raster_overviews
@@ -39,6 +41,9 @@ module CartoDB
             DROP TABLE "#{table[:schema]}"."#{table[:name]}"
           })
         }
+        if @parent_name
+          @database.run(%{SELECT CDB_DropOverviews('#{@parent_name}'::regclass)})
+        end
       end
 
       # @param existing_parent_name String
