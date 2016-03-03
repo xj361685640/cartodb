@@ -1,0 +1,271 @@
+body.is-draggingItem .DropArea--drop,
+body.is-draggingGroup .DropArea--remove {
+  background: #F1F1F1;
+}
+
+body.is-draggingItem .DropArea--drop {
+  background: #F1F1F1;
+}
+
+.Group {
+  margin: 0 0 5px;
+  border: 1px solid #F1F1F1;
+  border-radius: 5px;
+  background: #FFF;
+  transition: background 200ms ease-in-out, border 200ms ease-in-out;
+}
+
+.Group-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 10px 5px 10px;
+}
+
+.Group-items {
+  padding: 10px;
+}
+
+.Group.is-collapsed .Group-items {
+  display: none;
+}
+
+.Group-icon {
+  display: inline-block;
+  height: 25px;
+  width:  25px;
+  line-height: 25px;
+  border-radius: 50%;
+  background-color: black;
+  color: white;
+  text-align: center;
+  font-size: 12px;
+}
+
+.Group-title {
+  display: inline-block;
+  font-weight: bold;
+}
+
+.Group-footer {
+  display: none;
+  background: #333;
+  color: #FFF;
+  border-radius: 0 0 5px 5px;
+  text-align: center;
+  padding: 3px;
+  font-size: 10px;
+}
+
+.Group.has-footer .Group-footer {
+  display: block;
+}
+
+.Item {
+  margin: 0 0 5px;
+  border-radius: 5px;
+  background: none;
+  border: none;
+}
+
+.Item.is-table {
+  background: none;
+  border: none;
+}
+
+.Item.is-table .Item-title {
+  background: #f1f1f1;
+  border-radius: 0 5px 5px 0;
+  font-size: 11px;
+  width: auto;
+  padding: 5px;
+}
+
+.Item.is-table .Item-icon {
+  color: #333;
+  background: #f1f1f1;
+  padding: 5px;
+}
+
+.ui-draggable-dragging {
+  z-index: 1000;
+  cursor: move;
+  box-shadow: 5px 5px 3px rgba(0, 0, 0, 0.2);
+}
+.Group.is-dragging,
+.Group.ui-sortable-helper,
+.Item.ui-sortable-helper {
+  border: 1px solid #666;
+  box-shadow: 5px 5px 3px rgba(0, 0, 0, 0.2);
+  cursor: move;
+  opacity: 0.9;
+}
+
+.Item.has-items {
+  display: flex;
+  justify-content: space-between;
+}
+
+.Item-header {
+  display: flex;
+  margin: 0 0 5px;
+  width: 100%;
+}
+
+.Item-title {
+  width: 100%;
+  border: 1px solid #F1F1F1;
+  border-left: none;
+  color: #666;
+  border-radius: 0 5px 5px 0;
+  padding: 10px;
+  font-size: 12px;
+  transition: all 150ms ease-in-out;
+}
+
+.Item-icon {
+  padding: 10px;
+  background: #f1f1f1;
+  font-size: 12px;
+  color: #fff;
+  border-radius: 5px 0 0 5px;
+  min-width: 18px;
+  font-size: 10px;
+  text-align: center;
+  transition: all 150ms ease-in-out;
+}
+
+.Button {
+  margin: 0;
+  padding: 0;
+  border: none;
+  outline: none;
+  background: none;
+  color: rgb(87, 170, 224);
+  font-size: 14px;
+}
+.Button:hover {
+  display: inline-block;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.DropArea {
+  min-height: 100px;
+  border-radius: 5px;
+  transition: background 100ms ease-in-out;
+}
+
+.DropArea.DropArea--remove {
+  bottom: 20px;
+  left: 10px;
+  right: 10px;
+  color: #333;
+  padding: 50px 0;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.DropArea.DropArea--drop.is-selected,
+.DropArea.DropArea--remove.is-selected {
+  background: #DDD;
+}
+
+.DropArea.is-accepting {
+  background: #F1F1F1;
+}
+
+.Placeholder {
+  margin: 0 0 5px;
+  border-radius: 5px;
+  background: rgba(#F1F1F1, 0.2);
+}
+
+.has-color-A .Item-icon,
+.has-color-A .Group-icon {
+  background: rgb(237, 204, 148);
+}
+
+.has-color-B .Item-icon,
+.has-color-B .Group-icon {
+  background: rgb(148, 104, 148);
+}
+
+.has-color-C .Item-icon,
+.has-color-C .Group-icon {
+  background: rgb(204, 237, 204);
+}
+
+.has-color-D .Item-icon,
+.has-color-D .Group-icon {
+  background: rgb(248, 237, 148);
+}
+
+.has-color-E .Item-icon,
+.has-color-E .Group-icon {
+  background: rgb(148, 137, 28);
+}
+
+.has-color-F .Item-icon,
+.has-color-F .Group-icon {
+  background: rgb(48, 37, 148);
+}
+
+
+
+.ui-state-default {
+  background: #f1f1f1;
+}
+
+.Group:hover,
+.Group.is-selected {
+  border-color: #666;
+}
+
+.Item.is-table:hover,
+.Item.is-table:hover .Item-title {
+  border: none!Important;
+}
+
+.Item.is-table .Item-title {
+  border: none!Important;
+}
+
+.Item.is-table:hover .Item-title {
+  background: #f1f1f1 !Important;
+}
+
+.Item:hover .has-color-A .Item-title {
+  background: rgba(237, 204, 148, 0.5);
+  border: 1px solid rgba(237, 204, 148, 1);
+  border-left: none;
+}
+
+.Item:hover .has-color-B .Item-title {
+  background: rgba(148, 104, 148, .5);
+  border: 1px solid rgba(148, 104, 148, 1);
+  border-left: none;
+}
+
+.Item:hover .has-color-C .Item-title {
+  background: rgba(204, 237, 204, .5);
+  border: 1px solid rgba(204, 237, 204, 1);
+  border-left: none;
+}
+
+.Item:hover .has-color-D .Item-title {
+  background: rgba(248, 237, 148, .5);
+  border: 1px solid rgba(248, 237, 148, 1);
+  border-left: none;
+}
+
+.Item:hover .has-color-E .Item-title {
+  background: rgba(148, 137, 28, .5);
+  border: 1px solid rgba(148, 137, 28, 1);
+  border-left: none;
+}
+
+.Item:hover .has-color-F .Item-title {
+  background: rgba(48, 37, 148, .5);
+  border: 1px solid rgba(48, 37, 148, 1);
+  border-left: none;
+}
