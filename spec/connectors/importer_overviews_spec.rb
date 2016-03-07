@@ -221,9 +221,7 @@ describe CartoDB::Importer2::Overviews do
           end
         end.to raise_error(Sequel::DatabaseError, /relation .+ does not exist/)
       end
-      puts "BEFORE: #{ov_tables.inspect}"
       ov_tables = overview_tables(@user, table.name)
-      puts "AFTER: (#{table.name}) #{ov_tables.inspect} "
       ov_tables.size.should > 0
     end
   end
