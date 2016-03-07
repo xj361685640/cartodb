@@ -47,7 +47,7 @@ describe CartoDB::Importer2::Overviews do
   end
 
   def has_overviews?(user, table)
-    overview_tables(user, table).size > 0
+    !overview_tables(user, table).empty?
   end
 
   def remove_overviews(user, table)
@@ -187,6 +187,33 @@ describe CartoDB::Importer2::Overviews do
           end
         end.to raise_error(Sequel::DatabaseError, /relation .+ does not exist/)
       end
+    end
+  end
+
+  it 'should use the overviews-specific statement timeout' do
+    set_feature_flag @user, 'create_overviews', true
+    Cartodb.with_config overviews: { 'min_rows' => 500, 'statement_timeout' => 1 } do
+      @user.has_feature_flag?('create_overviews').should eq true
+      Cartodb.get_config(:overviews, 'min_rows').should eq 500
+
+      # cities_box is a ~900 points dataset
+      filepath = "#{Rails.root}/spec/support/data/cities-box.csv"
+      data_import = DataImport.create(
+        user_id:     @user.id,
+        data_source: filepath,
+        updated_at:  Time.now,
+        append:      false,
+        privacy:     ::UserTable::PRIVACY_VALUES_TO_TEXTS.invert['public']
+      )
+      data_import.values[:data_source] = filepath
+
+      # avoid noisy error messages
+      data_import.stubs(:puts)
+      CartoDB.stubs(:notify_error)
+
+      expect { data_import.run_import! }.to raise_error(Sequel::DatabaseError)
+      data_import.success.should eq false
+      data_import.log.entries.should match(/canceling statement due to statement timeout/)
     end
   end
 end

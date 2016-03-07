@@ -17,7 +17,8 @@ require_relative '../../services/importer/lib/importer/query_batcher'
 require_relative '../../services/importer/lib/importer/cartodbfy_time'
 require_relative '../../services/datasources/lib/datasources/decorators/factory'
 require_relative '../../services/table-geocoder/lib/internal-geocoder/latitude_longitude'
-require_relative '../factories/layer_factory'
+require_relative '../model_factories/layer_factory'
+require_relative '../model_factories/map_factory'
 
 require_relative '../../lib/cartodb/stats/user_tables'
 require_relative '../../lib/cartodb/stats/importer'
@@ -501,18 +502,18 @@ class Table
   end
 
   def create_default_map_and_layers
-    base_layer = CartoDB::Factories::LayerFactory.get_default_base_layer(owner)
+    base_layer = ::ModelFactories::LayerFactory.get_default_base_layer(owner)
 
-    map = CartoDB::Factories::MapFactory.get_map(base_layer, user_id, id)
+    map = ::ModelFactories::MapFactory.get_map(base_layer, user_id, id)
     @user_table.map_id = map.id
 
     map.add_layer(base_layer)
 
-    data_layer = CartoDB::Factories::LayerFactory.get_default_data_layer(name, owner, the_geom_type)
+    data_layer = ::ModelFactories::LayerFactory.get_default_data_layer(name, owner, the_geom_type)
     map.add_layer(data_layer)
 
     if base_layer.supports_labels_layer?
-      labels_layer = CartoDB::Factories::LayerFactory.get_default_labels_layer(base_layer)
+      labels_layer = ::ModelFactories::LayerFactory.get_default_labels_layer(base_layer)
       map.add_layer(labels_layer)
     end
   end
@@ -1202,9 +1203,8 @@ class Table
       unless register_table_only
         begin
           #  Underscore prefixes have a special meaning in PostgreSQL, hence the ugly hack
-          #  see http://stackoverflow.com/questions/26631976/how-to-rename-a-postgresql-table-by-prefixing-an-underscore
           if name.start_with?('_')
-            temp_name = "#{10.times.map { rand(9) }.join}_" + name
+            temp_name = "t" + "#{9.times.map { rand(9) }.join}" + name
             owner.in_database.rename_table(@name_changed_from, temp_name)
             owner.in_database.rename_table(temp_name, name)
           else
@@ -1218,9 +1218,8 @@ class Table
         end
       end
 
-      propagate_namechange_to_table_vis
-
-
+      begin
+        propagate_namechange_to_table_vis
         if @user_table.layers.blank?
           exception_to_raise = CartoDB::TableError.new("Attempt to rename table without layers #{qualified_table_name}")
           CartoDB::notify_exception(exception_to_raise, user: owner)
@@ -1229,7 +1228,12 @@ class Table
             layer.rename_table(@name_changed_from, name).save
           end
         end
-
+      rescue exception
+        CartoDB::report_exception(exception,
+                                  "Failed while renaming visualization #{@name_changed_from} to #{name}",
+                                  user: owner)
+        raise exception
+      end
     end
     @name_changed_from = nil
   end
@@ -1386,8 +1390,11 @@ class Table
     name = name.to_s.squish #.downcase
     name = 'untitled_table' if name.blank?
 
-    # Valid names start with a letter or an underscore
-    name = "table_#{name}" unless name[/^[a-z_]{1}/]
+    # Valid names start with a letter. Table names which start
+    # with an underscore are unsupported
+    # see http://stackoverflow.com/questions/26631976/how-to-rename-a-postgresql-table-by-prefixing-an-underscore
+
+    name = "table_#{name}" unless name[/^[a-z]{1}/]
 
     # Subsequent characters can be letters, underscores or digits
     name = name.gsub(/[^a-z0-9]/,'_').gsub(/_{2,}/, '_')
