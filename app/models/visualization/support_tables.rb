@@ -16,20 +16,35 @@ module CartoDB
 
       def reset
         @tables_list = nil
-        @parent_name = nil
+        @parent_table_name = nil
+      end
+
+      def parent
+        @parent ||= @parent_id && Visualization::Member.new(id: @parent_id).fetch
+      end
+
+      def parent_table_name
+        @parent_table_name || (parent && parent.name)
+      end
+
+      def parent_schema_name
+        parent && parent.user.database_schema
+      end
+
+      def parent_database_name
+        parent && parent.user.database_name
       end
 
       # Only intended to be used if from the Visualization Relator (who will set the parent)
       def load_actual_list(parent_name=nil)
+        @parent_table_name = parent_name || @parent_table_name
         return [] if @parent_id.nil? || @parent_kind != Visualization::Member::KIND_RASTER
-        parent = Visualization::Member.new(id:@parent_id).fetch
-        @parent_name = parent_name || parent.name
         table_data = @database.fetch(%Q{
           SELECT o_table_catalog AS catalog, o_table_schema AS schema, o_table_name AS name
           FROM raster_overviews
-          WHERE r_table_catalog = '#{parent.user.database_name}'
-          AND r_table_schema = '#{parent.user.database_schema}'
-          AND r_table_name = '#{parent_name.nil? ? parent.name : parent_name}'
+          WHERE r_table_catalog = '#{parent_database_name}'
+          AND r_table_schema = '#{parent_schema_name}'
+          AND r_table_name = '#{parent_table_name}'
         }).all
 
         table_data.nil? ? [] : table_data
@@ -41,9 +56,7 @@ module CartoDB
             DROP TABLE "#{table[:schema]}"."#{table[:name]}"
           })
         }
-        if @parent_name
-          @database.run(%{SELECT CDB_DropOverviews('#{@parent_name}'::regclass)})
-        end
+        @database.run(%{SELECT CDB_DropOverviews('#{parent_table_name}'::regclass)})
       end
 
       # @param existing_parent_name String
@@ -80,6 +93,34 @@ module CartoDB
           }
         end
 
+        @parent_table_name = seek_parent_name || existing_parent_name
+        if parent_table_name
+          # FIXME: this cannot work this way: by the time this is executed
+          # the parent table has been renamed, so CDB_OVerviews(regclass)
+          # will fail. We should have obtained the overview tables list
+          # before renaming the table. Other solutions would be to have
+          # a CDB_OVerviews(text) function that doesn't need the base table
+          # to exist, or a CDB_RenameOverviews(text) function.
+          begin
+            overviews_schema = parent_schema_name
+            overview_tables(parent_table_name).each do |overview_table|
+              if overviews_schema
+                qualified_table = %{"#{overviews_schema}"."#{overview_table}"}
+              else
+                qualified_table = %{"#{overview_table}"}
+              end
+              new_overview_table = overview_table.sub(parent_table_name, new_parent_name)
+              @database.execute(%Q{
+                ALTER TABLE "#{qualified_table}"
+                RENAME TO "#{new_overview_table}"
+              })
+              update_permissions(new_overview_table, @public_user_roles_list, overviews_schema)
+            end
+          rescue
+            renamed = false
+          end
+        end
+
         { success: renamed, names: support_tables_new_names }
       end
 
@@ -93,6 +134,23 @@ module CartoDB
           recreate_raster_constraints_if_exists(item[:name], parent_table_name, new_schema)
           update_permissions(item[:name], @public_user_roles_list, new_schema)
         }
+        # @parent_table_name = parent_table_name
+        # if parent_table_name
+        #   # TODO: CDB_ChangeOverviewsSchema(...)
+        #   overviews_schema = parent_schema_name
+        #   overview_tables(parent_table_name).each do |overview_table|
+        #     if overviews_schema
+        #       qualified_table = %{"#{overviews_schema}"."#{overview_table}"}
+        #     else
+        #       qualified_table = %{"#{overview_table}"}
+        #     end
+        #     @database.execute(%Q{
+        #       ALTER TABLE "#{qualified_table}"
+        #       SET SCHEMA "#{new_schema}"
+        #     })
+        #     update_permissions(overview_table, @public_user_roles_list, new_schema)
+        #   end
+        # end
       end
 
       # For import purposes
@@ -101,11 +159,24 @@ module CartoDB
         @tables_list = new_list
       end
 
-
       private
 
       def tables(seek_parent_name=nil)
         @tables_list ||= load_actual_list(seek_parent_name)
+      end
+
+      def overview_tables(parent_table_name)
+        begin
+          overviews_data = @database.fetch(%{SELECT * FROM CDB_Overviews('#{parent_table_name}'::regclass)})
+          if overviews_data
+            overviews_data.map(:overview_table).to_a
+          else
+            []
+          end
+        rescue Sequel::DatabaseError => e
+          raise unless e.to_s.match /relation .+ does not exist/
+          []
+        end
       end
 
       def update_permissions(overview_table_name, db_roles_list, schema)
