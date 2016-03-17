@@ -44,7 +44,7 @@ describe User do
     stub_named_maps_calls
     CartoDB::Varnish.any_instance.stubs(:send_command).returns(true)
     CartoDB::UserModule::DBService.any_instance.stubs(:enable_remote_db_user).returns(true)
-    Table.any_instance.stubs(:update_cdb_tablemetadata)
+    #Table.any_instance.stubs(:update_cdb_tablemetadata)
   end
 
   after(:all) do
@@ -1386,6 +1386,19 @@ describe User do
 
       # TODO: the table won't be cartodbfy'ed and registered until we support CamelCase identifiers.
       @user.tables.count.should == initial_count
+    end
+
+    it 'shall not fail when executed in the middle of a sync op' do
+      table = new_table(:user_id => @user.id)
+      table.save
+
+      # Simulate a sync operation, see CartoDB::Synchronization::Adapter#overwrite
+      @user.in_database.run %{CREATE TABLE #{table.name}_copy AS SELECT * FROM #{table.name}}
+      @user.in_database.run %{DROP TABLE #{table.name}}
+      @user.in_database.run %{ALTER TABLE #{table.name}_copy RENAME TO #{table.name}}
+
+      # at this point, fix_oid is not called yet
+      @user.link_deleted_tables
     end
 
   end

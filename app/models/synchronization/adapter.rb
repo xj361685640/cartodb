@@ -56,6 +56,7 @@ module CartoDB
           move_to_schema(result)
           rename(result.table_name, table_name)
         end
+        # NOTE: there's a chance of race condition here
         fix_oid(table_name)
       rescue => exception
         puts "Sync overwrite ERROR: #{exception.message}: #{exception.backtrace.join}"
