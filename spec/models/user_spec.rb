@@ -44,7 +44,7 @@ describe User do
     stub_named_maps_calls
     CartoDB::Varnish.any_instance.stubs(:send_command).returns(true)
     CartoDB::UserModule::DBService.any_instance.stubs(:enable_remote_db_user).returns(true)
-    #Table.any_instance.stubs(:update_cdb_tablemetadata)
+    Table.any_instance.stubs(:update_cdb_tablemetadata)
   end
 
   after(:all) do
@@ -1389,6 +1389,7 @@ describe User do
     end
 
     it 'shall not fail when executed in the middle of a sync op' do
+      Table.any_instance.unstub(:update_cdb_tablemetadata)
       table = new_table(:user_id => @user.id)
       table.save
 
