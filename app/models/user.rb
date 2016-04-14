@@ -838,6 +838,8 @@ class User < Sequel::Model
       'soft_here_isolines_limit', soft_here_isolines_limit,
       'google_maps_client_id', google_maps_key,
       'google_maps_api_key', google_maps_private_key,
+      'mapzen_geocoder_api_key', mapzen_geocoder_api_key,
+      'mapzen_routing_api_key', mapzen_routing_api_key,
       'period_end_date', period_end_date
   end
 
