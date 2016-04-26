@@ -15,11 +15,16 @@ module CartoDB
       APPEND_MODE_OPTION    = '-append'
 
       DEFAULT_BINARY = 'which ogr2ogr2.1'
+      OGRINFO_BINARY = 'ogrinfo'
 
       LATITUDE_POSSIBLE_NAMES   = %w{ latitude lat latitudedecimal
         latitud lati decimallatitude decimallat point_latitude }
       LONGITUDE_POSSIBLE_NAMES  = %w{ longitude lon lng
         longitudedecimal longitud long decimallongitude decimallong point_longitude }
+
+      GEOM_POSSIBLE_NAMES = %w{ the_geom geometry geom wkb_geometry geojson wkt }
+
+      GEOM_DEFAULT_NAME = 'the_geom'
 
       DEFAULT_TIMEOUT = '1h'
 
@@ -149,14 +154,30 @@ module CartoDB
         if csv_guessing && is_csv?
           # Inverse of the selection: if I want guessing I must NOT leave quoted fields as string
           "-oo AUTODETECT_TYPE=YES -oo QUOTED_FIELDS_AS_STRING=#{quoted_fields_guessing ? 'NO' : 'YES' } " +
-          "#{x_y_possible_names_option} -s_srs EPSG:4326 -t_srs EPSG:4326"
+          "#{x_y_possible_names_option} #{geom_possible_names_option} #{keep_geom_columns} -s_srs EPSG:4326 -t_srs EPSG:4326"
+        elsif !csv_guessing && is_csv?
+          # the_geom should be recognised even though guessing is disabled
+          "#{geom_possible_names_option} #{keep_geom_columns} -s_srs EPSG:4326 -t_srs EPSG:4326"
         else
           ''
         end
       end
 
       def x_y_possible_names_option
-        "-oo X_POSSIBLE_NAMES=#{LONGITUDE_POSSIBLE_NAMES.join(',')} -oo Y_POSSIBLE_NAMES=#{LATITUDE_POSSIBLE_NAMES.join(',')}"
+          "-oo X_POSSIBLE_NAMES=#{LONGITUDE_POSSIBLE_NAMES.join(',')} -oo Y_POSSIBLE_NAMES=#{LATITUDE_POSSIBLE_NAMES.join(',')}"
+      end
+
+      def geom_possible_names_option
+        "-oo GEOM_POSSIBLE_NAMES=#{GEOM_DEFAULT_NAME}"
+      end
+
+      def keep_geom_columns
+        if csv_guessing && is_csv? && !has_the_geom_column
+          # Keep lat/long columns when used, old behavior
+          "-oo KEEP_GEOM_COLUMNS=YES"
+        else
+          "-oo KEEP_GEOM_COLUMNS=NO"
+        end
       end
 
       def new_layer_type_option
@@ -197,12 +218,11 @@ module CartoDB
         %Q{user=#{pg_options.fetch(:username)} }          +
         %Q{dbname=#{pg_options.fetch(:database)} }    +
         %Q{password=#{pg_options.fetch(:password)}"}
-        # 'schemas=#{SCHEMA},cartodb' param is no longer needed, let the DB build the proper one
       end
 
       def layer_creation_options
-        # Dimension option, precision option
-        "-lco DIM=2 -lco PRECISION=NO"
+        # Dimension option, precision option, default geometry name option
+        "-lco DIM=2 -lco PRECISION=NO -lco GEOMETRY_NAME=#{GEOM_DEFAULT_NAME}"
       end
 
       def projection_option
@@ -215,6 +235,22 @@ module CartoDB
         %Q{-doo PRELUDE_STATEMENTS="SET statement_timeout TO \'#{DEFAULT_TIMEOUT}\'" } +
         %Q{-doo CLOSING_STATEMENTS='SET statement_timeout TO DEFAULT' } +
         %Q{-update}
+      end
+
+      def columns_in(filepath)
+        stdout, stderr, status =
+          Open3.capture3("#{OGRINFO_BINARY} -ro -so -al #{filepath}")
+        stdout.split("\n")
+              .select { |line| line =~ /^(\w+):\s\w+\s\(.*\)/ }
+              .map { |line| line.gsub(/:\s.*/, '') }
+      end
+
+      def columns
+        @columns ||= columns_in(filepath)
+      end
+
+      def has_the_geom_column
+        columns.include?(GEOM_DEFAULT_NAME)
       end
     end
   end
