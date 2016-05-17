@@ -27,8 +27,8 @@ module CartoDB
           end
           copy_privileges(user.database_schema, table_name, result.schema, result.table_name)
           index_statements = generate_index_statements(user.database_schema, table_name)
-          overwrite(table_name, result)
           cartodbfy(table_name)
+          overwrite(table_name, result)
           run_index_statements(index_statements)
         end
         self
