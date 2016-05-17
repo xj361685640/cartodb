@@ -80,6 +80,8 @@ module CartoDB
       end
 
       def cartodbfy(table_name)
+        table = user.tables.where(name: table_name).first.service
+
         table.send :cartodbfy
         table.schema(reload: true)
         table.reload
