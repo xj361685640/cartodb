@@ -29,6 +29,7 @@ module CartoDB
           index_statements = generate_index_statements(user.database_schema, table_name)
           cartodbfy(table_name)
           overwrite(table_name, result)
+          prepare_table(table_name)
           run_index_statements(index_statements)
         end
         self
@@ -79,6 +80,20 @@ module CartoDB
       end
 
       def cartodbfy(table_name)
+        table.send :cartodbfy
+        table.schema(reload: true)
+        table.reload
+
+        table.send :update_table_pg_stats
+        table.save
+      rescue => exception
+        CartoDB::Logger.error(message: 'Error in sync cartodbfy',
+                              exception: exception,
+                              user: user,
+                              table: table_name)
+      end
+
+      def prepare_table(table_name)
         table = user.tables.where(name: table_name).first.service
 
         table.force_schema = true
@@ -88,13 +103,6 @@ module CartoDB
 
         table.send :set_the_geom_column!
         table.import_cleanup
-
-        table.send :cartodbfy
-        table.schema(reload: true)
-        table.reload
-
-        table.send :update_table_pg_stats
-        table.save
       rescue => exception
         CartoDB::Logger.error(message: 'Error in sync cartodbfy',
                               exception: exception,
