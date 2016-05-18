@@ -4,6 +4,7 @@ module CartoDB
   module Synchronization
     class Adapter
       DESTINATION_SCHEMA = 'public'
+      STATEMENT_TIMEOUT = 1.hour*1000
 
       attr_accessor :table
 
@@ -27,7 +28,8 @@ module CartoDB
           end
           copy_privileges(user.database_schema, table_name, result.schema, result.table_name)
           index_statements = generate_index_statements(user.database_schema, table_name)
-          cartodbfy(table_name)
+          move_to_schema(result)
+          cartodbfy_and_stats(result)
           overwrite(table_name, result)
           prepare_table(table_name)
           run_index_statements(index_statements)
@@ -54,7 +56,7 @@ module CartoDB
         database.transaction do
           rename(table_name, temporary_name) if exists?(table_name)
           drop(temporary_name) if exists?(temporary_name)
-          move_to_schema(result)
+          #move_to_schema(result)
           rename(result.table_name, table_name)
         end
         fix_oid(table_name)
@@ -79,15 +81,22 @@ module CartoDB
         user_table.save
       end
 
-      def cartodbfy(table_name)
-        table = user.tables.where(name: table_name).first.service
+      def cartodbfy_and_stats(result)
+        schema_name = user.database_schema
+        table_name = "#{schema_name}.#{result.table_name}"
 
-        table.send :cartodbfy
-        table.schema(reload: true)
-        table.reload
+        user.transaction_with_timeout(statement_timeout: STATEMENT_TIMEOUT) do |user_conn|
+        user_conn.run(%Q{
+          SELECT cartodb.CDB_CartodbfyTable('#{schema_name}'::TEXT,'#{table_name}'::REGCLASS);
+        })
+        end
 
-        table.send :update_table_pg_stats
-        table.save
+        user.transaction_with_timeout(statement_timeout: STATEMENT_TIMEOUT) do |user_conn|
+        user_conn.run(%Q{
+          ANALYZE #{table_name};
+        })
+        end
+
       rescue => exception
         CartoDB::Logger.error(message: 'Error in sync cartodbfy',
                               exception: exception,
