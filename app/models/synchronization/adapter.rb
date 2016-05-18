@@ -29,9 +29,10 @@ module CartoDB
           copy_privileges(user.database_schema, table_name, result.schema, result.table_name)
           index_statements = generate_index_statements(user.database_schema, table_name)
           move_to_schema(result)
-          cartodbfy_and_stats(result)
+          cartodbfy(result.table_name)
+          update_table_pg_stats(result.table_name)
           overwrite(table_name, result)
-          prepare_table(table_name)
+          setup_table(table_name)
           run_index_statements(index_statements)
         end
         self
@@ -56,7 +57,6 @@ module CartoDB
         database.transaction do
           rename(table_name, temporary_name) if exists?(table_name)
           drop(temporary_name) if exists?(temporary_name)
-          #move_to_schema(result)
           rename(result.table_name, table_name)
         end
         fix_oid(table_name)
@@ -81,22 +81,15 @@ module CartoDB
         user_table.save
       end
 
-      def cartodbfy_and_stats(result)
+      def cartodbfy(tablename)
         schema_name = user.database_schema
-        table_name = "#{schema_name}.#{result.table_name}"
+        table_name = "#{schema_name}.#{tablename}"
 
         user.transaction_with_timeout(statement_timeout: STATEMENT_TIMEOUT) do |user_conn|
         user_conn.run(%Q{
           SELECT cartodb.CDB_CartodbfyTable('#{schema_name}'::TEXT,'#{table_name}'::REGCLASS);
         })
         end
-
-        user.transaction_with_timeout(statement_timeout: STATEMENT_TIMEOUT) do |user_conn|
-        user_conn.run(%Q{
-          ANALYZE #{table_name};
-        })
-        end
-
       rescue => exception
         CartoDB::Logger.error(message: 'Error in sync cartodbfy',
                               exception: exception,
@@ -104,7 +97,18 @@ module CartoDB
                               table: table_name)
       end
 
-      def prepare_table(table_name)
+      def update_table_pg_stats(tablename)
+        schema_name = user.database_schema
+        table_name = "#{schema_name}.#{tablename}"
+
+        user.transaction_with_timeout(statement_timeout: STATEMENT_TIMEOUT) do |user_conn|
+        user_conn.run(%Q{
+          ANALYZE #{table_name};
+        })
+        end
+      end
+
+      def setup_table(table_name)
         table = user.tables.where(name: table_name).first.service
 
         table.force_schema = true
@@ -112,6 +116,7 @@ module CartoDB
         table.import_to_cartodb(table_name)
         table.schema(reload: true)
 
+        #TODO: check if set_the_geom_column! can be avoided
         table.send :set_the_geom_column!
         table.import_cleanup
       rescue => exception
