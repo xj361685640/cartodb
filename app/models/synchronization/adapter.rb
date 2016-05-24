@@ -28,9 +28,9 @@ module CartoDB
           end
           copy_privileges(user.database_schema, table_name, result.schema, result.table_name)
           index_statements = generate_index_statements(user.database_schema, table_name)
-          move_to_schema(result)
-          cartodbfy(result.table_name)
-          update_table_pg_stats(result.table_name)
+          #move_to_schema(result)
+          debugger
+          #set_the_geom_column(result.table_name)
           overwrite(table_name, result)
           setup_table(table_name)
           run_index_statements(index_statements)
@@ -54,11 +54,16 @@ module CartoDB
         # (and the geom index uses table id as base for its name),
         # so first we need to remove old table, then change schema of the imported one
         # and finally rename newly moved table to original name
-        database.transaction do
+        user.transaction_with_timeout(statement_timeout: STATEMENT_TIMEOUT) do |user_conn|
+          sleep(300)
+          move_to_schema(result)
+          sleep(10)
+          cartodbfy(result.table_name, user_conn)
           rename(table_name, temporary_name) if exists?(table_name)
           drop(temporary_name) if exists?(temporary_name)
           rename(result.table_name, table_name)
         end
+        debugger
         fix_oid(table_name)
       rescue => exception
         puts "Sync overwrite ERROR: #{exception.message}: #{exception.backtrace.join}"
@@ -81,15 +86,13 @@ module CartoDB
         user_table.save
       end
 
-      def cartodbfy(tablename)
+      def cartodbfy(tablename, user_conn)
         schema_name = user.database_schema
         table_name = "#{schema_name}.#{tablename}"
 
-        user.transaction_with_timeout(statement_timeout: STATEMENT_TIMEOUT) do |user_conn|
         user_conn.run(%Q{
           SELECT cartodb.CDB_CartodbfyTable('#{schema_name}'::TEXT,'#{table_name}'::REGCLASS);
         })
-        end
       rescue => exception
         CartoDB::Logger.error(message: 'Error in sync cartodbfy',
                               exception: exception,
@@ -116,11 +119,12 @@ module CartoDB
         table.import_to_cartodb(table_name)
         table.schema(reload: true)
 
-        #TODO: check if set_the_geom_column! can be avoided
         table.send :set_the_geom_column!
+        update_table_pg_stats(table_name)
+
         table.import_cleanup
       rescue => exception
-        CartoDB::Logger.error(message: 'Error in sync cartodbfy',
+        CartoDB::Logger.error(message: 'Error in cartodbfy setup',
                               exception: exception,
                               user: user,
                               table: table_name)
