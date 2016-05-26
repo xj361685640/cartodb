@@ -46,7 +46,7 @@ module CartoDB
 
       def overwrite(table_name, result)
         return false unless runner.remote_data_updated?
-
+        sleep(500)
         temporary_name = temporary_name_for(result.table_name)
 
         # The relation might (and probably will) already exist in the user public schema
