@@ -117,11 +117,12 @@ module CartoDB
 
         table.import_to_cartodb(table_name)
         table.schema(reload: true)
-
+        table.reload
         # We send the detected geometry type to avoid manipulating geoms twice
         # set_the_geom_column! should just edit the metadata with the specified type
         table.send :set_the_geom_column!, type
         table.import_cleanup
+        table.save
       rescue => exception
         CartoDB::Logger.error(message: 'Error in sync cartodbfy',
                               exception: exception,
