@@ -83,7 +83,7 @@ module CartoDB
 
       def cartodbfy(table_name)
         schema_name = user.database_schema
-        qualified_table_name = '"#{schema_name}".#{tablename}'
+        qualified_table_name = "\"#{schema_name}\".#{table_name}"
 
         user.transaction_with_timeout(statement_timeout: STATEMENT_TIMEOUT) do |user_conn|
         user_conn.run(%Q{
