@@ -5,6 +5,7 @@ module CartoDB
     class Adapter
       DESTINATION_SCHEMA = 'public'
       STATEMENT_TIMEOUT = 1.hour*1000
+      THE_GEOM = 'the_geom'
 
       attr_accessor :table
 
@@ -29,10 +30,9 @@ module CartoDB
           copy_privileges(user.database_schema, table_name, result.schema, result.table_name)
           index_statements = generate_index_statements(user.database_schema, table_name)
           move_to_schema(result)
-          cartodbfy(result.table_name)
-          update_table_pg_stats(result.table_name)
+          geo_type = cartodbfy(result.table_name)
           overwrite(table_name, result)
-          setup_table(table_name)
+          setup_table(table_name, geo_type)
           run_index_statements(index_statements)
         end
         self
@@ -81,15 +81,19 @@ module CartoDB
         user_table.save
       end
 
-      def cartodbfy(tablename)
+      def cartodbfy(table_name)
         schema_name = user.database_schema
-        table_name = "#{schema_name}.#{tablename}"
+        qualified_table_name = '"#{schema_name}".#{tablename}'
 
         user.transaction_with_timeout(statement_timeout: STATEMENT_TIMEOUT) do |user_conn|
         user_conn.run(%Q{
-          SELECT cartodb.CDB_CartodbfyTable('#{schema_name}'::TEXT,'#{table_name}'::REGCLASS);
+          SELECT cartodb.CDB_CartodbfyTable('#{schema_name}'::TEXT,'#{qualified_table_name}'::REGCLASS);
         })
         end
+
+        update_table_pg_stats(qualified_table_name)
+        type = get_the_geom_type(qualified_table_name)
+        return type
       rescue => exception
         CartoDB::Logger.error(message: 'Error in sync cartodbfy',
                               exception: exception,
@@ -97,18 +101,16 @@ module CartoDB
                               table: table_name)
       end
 
-      def update_table_pg_stats(tablename)
-        schema_name = user.database_schema
-        table_name = "#{schema_name}.#{tablename}"
-
+      def update_table_pg_stats(qualified_table_name)
         user.transaction_with_timeout(statement_timeout: STATEMENT_TIMEOUT) do |user_conn|
         user_conn.run(%Q{
-          ANALYZE #{table_name};
+          ANALYZE #{qualified_table_name};
         })
         end
       end
 
-      def setup_table(table_name)
+      def setup_table(table_name, geo_type)
+        # this should only perform operations *after* switch
         table = user.tables.where(name: table_name).first.service
 
         table.force_schema = true
@@ -116,8 +118,9 @@ module CartoDB
         table.import_to_cartodb(table_name)
         table.schema(reload: true)
 
-        #TODO: check if set_the_geom_column! can be avoided
-        table.send :set_the_geom_column!
+        # We send the detected geometry type to avoid manipulating geoms twice
+        # set_the_geom_column! should just edit the metadata with the specified type
+        table.send :set_the_geom_column!, type
         table.import_cleanup
       rescue => exception
         CartoDB::Logger.error(message: 'Error in sync cartodbfy',
@@ -127,6 +130,53 @@ module CartoDB
       ensure
         fix_oid(table_name)
         update_cdb_tablemetadata(table_name)
+      end
+
+      def get_the_geom_type(qualified_table_name)
+        # Partial duplication of Table#set_the_geom_column! to be able to
+        # operate with non-registered tables.
+        type = nil
+        the_geom_data = user.in_database[%Q{
+          SELECT a.attname, t.typname
+          FROM pg_attribute a, pg_type t
+          WHERE attrelid = '#{qualified_table_name}'::regclass
+          AND attname = '#{THE_GEOM}'
+          AND a.atttypid = t.oid
+          LIMIT 1
+        }].first
+
+        if the_geom_data
+          if the_geom_data[:typname] == 'geometry'
+            geom_type = user.in_database["SELECT GeometryType(#{THE_GEOM}) FROM #{qualified_table_name} WHERE #{THE_GEOM} IS NOT null limit 1"].first
+            type = geom_type[:geometrytype] unless geom_type
+          else
+            user.in_database.rename_column(qualified_table_name, THE_GEOM, :the_geom_str)
+          end
+        end
+
+        #if the geometry is MULTIPOINT we convert it to POINT
+        if type.to_s.downcase == 'multipoint'
+          user.db_service.in_database_direct_connection({statement_timeout: STATEMENT_TIMEOUT}) do |user_database|
+            user_database.run("SELECT public.AddGeometryColumn('#{owner.database_schema}', '#{self.name}','the_geom_simple',4326, 'GEOMETRY', 2);")
+            user_database.run(%Q{UPDATE #{qualified_table_name} SET the_geom_simple = ST_GeometryN(the_geom,1);})
+            user_database.run("SELECT DropGeometryColumn('#{owner.database_schema}', '#{self.name}','the_geom');")
+            user_database.run(%Q{ALTER TABLE #{qualified_table_name} RENAME COLUMN the_geom_simple TO the_geom;})
+          end
+        type = 'point'
+        end
+
+        #if the geometry is LINESTRING or POLYGON we convert it to MULTILINESTRING and MULTIPOLYGON resp.
+        if %w(linestring polygon).include?(type.to_s.downcase)
+          user.db_service.in_database_direct_connection({statement_timeout: STATEMENT_TIMEOUT}) do |user_database|
+            user_database.run("SELECT public.AddGeometryColumn('#{owner.database_schema}', '#{self.name}','the_geom_simple',4326, 'GEOMETRY', 2);")
+            user_database.run(%Q{UPDATE #{qualified_table_name} SET the_geom_simple = ST_Multi(the_geom);})
+            user_database.run("SELECT DropGeometryColumn('#{owner.database_schema}', '#{self.name}','the_geom');")
+            user_database.run(%Q{ALTER TABLE #{qualified_table_name} RENAME COLUMN the_geom_simple TO the_geom;})
+            type = user_database["select GeometryType(#{THE_GEOM}) FROM #{qualified_table_name} where #{THE_GEOM} is not null limit 1"].first[:geometrytype]
+          end
+        end
+
+        return type
       end
 
       def update_cdb_tablemetadata(name)
@@ -150,6 +200,8 @@ module CartoDB
       end
 
       def move_to_schema(result, schema=DESTINATION_SCHEMA)
+        # The new table to sync is moved to user schema to allow CartoDBfication.
+        # This temporal table should not be registered (check ghost_tables_manager.rb)
         return self if schema == result.schema
         database.execute(%Q{
           ALTER TABLE "#{result.schema}"."#{result.table_name}"
