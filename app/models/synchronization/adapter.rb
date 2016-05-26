@@ -150,14 +150,14 @@ module CartoDB
         if the_geom_data
           if the_geom_data[:typname] == 'geometry'
             geom_type = user.in_database["SELECT GeometryType(#{THE_GEOM}) FROM #{qualified_table_name} WHERE #{THE_GEOM} IS NOT null limit 1"].first
-            type = geom_type[:geometrytype] unless geom_type
+            type = geom_type[:geometrytype].to_s.downcase if geom_type
           else
             user.in_database.rename_column(qualified_table_name, THE_GEOM, :the_geom_str)
           end
         end
 
         #if the geometry is MULTIPOINT we convert it to POINT
-        if type.to_s.downcase == 'multipoint'
+        if type == 'multipoint'
           user.db_service.in_database_direct_connection({statement_timeout: STATEMENT_TIMEOUT}) do |user_database|
             user_database.run("SELECT public.AddGeometryColumn('#{owner.database_schema}', '#{self.name}','the_geom_simple',4326, 'GEOMETRY', 2);")
             user_database.run(%Q{UPDATE #{qualified_table_name} SET the_geom_simple = ST_GeometryN(the_geom,1);})
@@ -168,7 +168,7 @@ module CartoDB
         end
 
         #if the geometry is LINESTRING or POLYGON we convert it to MULTILINESTRING and MULTIPOLYGON resp.
-        if %w(linestring polygon).include?(type.to_s.downcase)
+        if %w(linestring polygon).include?(type)
           user.db_service.in_database_direct_connection({statement_timeout: STATEMENT_TIMEOUT}) do |user_database|
             user_database.run("SELECT public.AddGeometryColumn('#{owner.database_schema}', '#{self.name}','the_geom_simple',4326, 'GEOMETRY', 2);")
             user_database.run(%Q{UPDATE #{qualified_table_name} SET the_geom_simple = ST_Multi(the_geom);})
