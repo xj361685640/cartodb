@@ -227,6 +227,8 @@ module CartoDB
           set_failure_state_from(importer)
         end
 
+        raise "hola"
+
         store
 
         notify
@@ -368,7 +370,7 @@ module CartoDB
       end
 
       def set_failure_state_from(importer)
-        log.append_and_store     '******** synchronization failed ********'
+        log.append_and_store     "******** synchronization failed retry: #{self.retried_times} ********"
         self.log_trace      = importer.runner_log_trace
         log.append     "*** Runner log: #{self.log_trace} \n***" unless self.log_trace.nil?
         self.state          = STATE_FAILURE
