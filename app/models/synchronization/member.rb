@@ -221,13 +221,14 @@ module CartoDB
         self.ran_at   = Time.now
         self.run_at   = Time.now + interval
 
+        raise "hola"
+
         if importer.success?
           set_success_state_from(importer)
         else
           set_failure_state_from(importer)
         end
 
-        raise "hola"
 
         store
 
