@@ -24,6 +24,7 @@ require_relative '../../services/importer/lib/importer/cartodbfy_time'
 require_relative '../../services/platform-limits/platform_limits'
 require_relative '../../services/importer/lib/importer/overviews'
 require_relative '../../lib/cartodb/event_tracker'
+require_relative '../../services/importer/lib/importer/connector'
 
 require_dependency 'carto/valid_table_name_proposer'
 
@@ -99,6 +100,7 @@ class DataImport < Sequel::Model
   TYPE_URL            = 'url'
   TYPE_QUERY          = 'query'
   TYPE_DATASOURCE     = 'datasource'
+  TYPE_CONNECTOR      = 'connector'
 
   def after_initialize
     instantiate_log
@@ -267,14 +269,17 @@ class DataImport < Sequel::Model
   def data_source=(data_source)
     path = Rails.root.join("public#{data_source}").to_s
     if data_source.nil?
-      self.values[:data_type] = TYPE_DATASOURCE
-      self.values[:data_source] = ''
+      values[:data_type] = TYPE_DATASOURCE
+      values[:data_source] = ''
+    elsif data_source.starts_with?('ODBC:')
+      values[:data_type] = TYPE_CONNECTOR
+      values[:data_source] = data_source
     elsif File.exist?(path) && !File.directory?(path)
-      self.values[:data_type] = TYPE_FILE
-      self.values[:data_source] = path
+      values[:data_type] = TYPE_FILE
+      values[:data_source] = path
     elsif Addressable::URI.parse(data_source).host.present?
-      self.values[:data_type] = TYPE_URL
-      self.values[:data_source] = data_source
+      values[:data_type] = TYPE_URL
+      values[:data_source] = data_source
     end
 
     self.original_url = self.values[:data_source] if (self.original_url.to_s.length == 0)
@@ -391,6 +396,7 @@ class DataImport < Sequel::Model
     self.state = STATE_UPLOADING
     return migrate_existing   if migrate_table.present?
     return from_table         if table_copy.present? || from_query.present?
+    return new_connector      if data_type == TYPE_CONNECTOR
     new_importer
   rescue => exception
     puts exception.to_s + exception.backtrace.join("\n")
@@ -669,6 +675,38 @@ class DataImport < Sequel::Model
     store_results(importer, runner, datasource_provider, manual_fields)
 
     importer.nil? ? false : importer.success?
+  end
+
+  def new_connector
+    tracker = lambda do |state|
+      self.state = state
+      save
+    end
+    database_options = pg_options
+
+    self.host = database_options[:host]
+
+    connector = CartoDB::Importer2::Connector.new(
+      data_source,
+      user: current_user,
+      pg: database_options,
+      log: log
+    )
+
+    registrar     = CartoDB::TableRegistrar.new(current_user, ::Table)
+    quota_checker = CartoDB::QuotaChecker.new(current_user)
+    database      = current_user.in_database
+    destination_schema = current_user.database_schema
+    public_user_roles = current_user.db_service.public_user_roles
+    overviews_creator = CartoDB::Importer2::Overviews.new(connector, current_user)
+    importer = CartoDB::Connector::Importer.new(
+      connector, registrar, quota_checker, database, id,
+      overviews_creator,
+      destination_schema, public_user_roles
+    )
+    log.append 'Before importer run'
+    importer.run(tracker)
+    log.append 'After importer run'
   end
 
   # Note: Assumes that if importer is nil an error happened
