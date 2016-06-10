@@ -707,6 +707,9 @@ class DataImport < Sequel::Model
     log.append 'Before importer run'
     importer.run(tracker)
     log.append 'After importer run'
+
+    store_results(importer, connector)
+    importer.nil? ? false : importer.success?
   end
 
   # Note: Assumes that if importer is nil an error happened
@@ -724,7 +727,7 @@ class DataImport < Sequel::Model
       self.runner_warnings = runner.warnings.to_json if !runner.warnings.empty?
 
       # http_response_code is only relevant if a direct download is performed
-      if !runner.nil? && datasource_provider.providers_download_url?
+      if runner && datasource_provider && datasource_provider.providers_download_url?
         self.http_response_code = runner.downloader.http_response_code
       end
 
@@ -966,7 +969,7 @@ class DataImport < Sequel::Model
   end
 
   def set_datasource_audit_to_complete(datasource, table_id = nil)
-    if datasource.persists_state_via_data_import?
+    if datasource && datasource.persists_state_via_data_import?
       datasource.data_import_item = self
       datasource.set_audit_to_completed(table_id)
     end
