@@ -976,7 +976,7 @@ class DataImport < Sequel::Model
   end
 
   def set_datasource_audit_to_failed(datasource)
-    if datasource.persists_state_via_data_import?
+    if datasource && datasource.persists_state_via_data_import?
       datasource.data_import_item = self
       datasource.set_audit_to_failed
     end
