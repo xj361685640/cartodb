@@ -35,6 +35,7 @@ module CartoDB
       end
 
       attr_reader :results, :log, :job
+      attr_accessor :stats
 
       def initialize(connector_source, options = {})
         @pg_options = options[:pg]
@@ -49,10 +50,15 @@ module CartoDB
         @conn_str = conn_str
         # TODO: parser params properly, make param names lowercase
         @params = Hash[@conn_str.split(';').map { |p| p.split('=').map(&:strip) }]
+        # TODO: use IMPORT FOREIGH SCHEMA with query options to create table
+        # and thus avoid the need for the columns.
+        @columns = @params.delete 'columns'
+        @columns = @columns.split(',') if @columns
         validate_params!
         @schema = @user.database_schema
         @results = []
         @tracker = nil
+        @stats = {}
       end
 
       def run(tracker = nil)
@@ -71,18 +77,25 @@ module CartoDB
         execute "CREATE TABLE #{qualified_table_name} AS SELECT * FROM #{foreign_table_name};"
       rescue => error
         @job.log "Connector Error #{error}"
-        @results.push result_for(table_name, error)
+        @results.push result_for(@job.schema, table_name, error)
       else
         @job.log "Connector created table #{table_name}"
-        @results.push result_for(table_name)
+        @job.log "job schema: #{@job.schema}"
+        @results.push result_for(@job.schema, table_name)
       ensure
-        @job.log "Connector cleanup"
+        @log.append_and_store "Connector cleanup"
         execute_as_superuser drop_foreign_table_command
         execute_as_superuser drop_server_command
+        @log.append_and_store "Connector cleaned-up"
       end
 
       def success?
         results.count(&:success?) > 0
+      end
+
+      def remote_data_updated?
+        # TODO: can we detect if query results have changed?
+        true
       end
 
       def tracker
@@ -90,6 +103,10 @@ module CartoDB
       end
 
       def visualizations
+        []
+      end
+
+      def warnings
         []
       end
 
@@ -127,16 +144,8 @@ module CartoDB
       end
 
       def create_foreign_table_command
-        # TODO: obtain foreign schema
-        columns = [
-          'sale_date timestamp without time zone',
-          'state varchar(2)',
-          'product_id int',
-          'client_id int',
-          'total int'
-        ]
         %{
-          CREATE FOREIGN TABLE #{foreign_table_name} (#{columns * ','})
+          CREATE FOREIGN TABLE #{foreign_table_name} (#{@columns * ','})
             SERVER #{server_name}
             OPTIONS (#{@params.map { |k, v| "#{k} '#{v}'" } * ",\n"});
           GRANT SELECT ON #{foreign_table_name} TO "#{@user.database_username}";
@@ -159,12 +168,12 @@ module CartoDB
         @user.in_database.execute command
       end
 
-      def result_for(table_name, error = nil)
+      def result_for(schema, table_name, error = nil)
         @job.success_status = !error
         @job.logger.store
         Result.new(
           name:           @params['table'],
-          schema:         @schema,
+          schema:         schema,
           tables:         [table_name],
           success:        @job.success_status,
           error_code:     error_for(error),
