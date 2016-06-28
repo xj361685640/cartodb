@@ -669,6 +669,7 @@
         "select-column": "Select a column",
         "show": "Show",
         "significance": "Significance",
+        "source": "Source",
         "target": "Target layer",
         "time": "Time",
         "top-range": "Top range",
