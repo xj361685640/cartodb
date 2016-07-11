@@ -83,6 +83,7 @@
       var done = this.async();
       require("child_process").exec('make update_cdb', function (error, stdout, stderr) {
         if (error) {
+          throw new Error(error, stdout, stderr);
           grunt.log.fail('cartodb.js not updated (due to '+ stdout +", "+ stderr +")");
         } else {
           grunt.log.ok('cartodb.js updated');
