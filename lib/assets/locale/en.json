@@ -19,41 +19,41 @@
   },
 
   "analyses": {
-    "georeference": {
-      "title": "Georeference",
-      "short-title": "Georeference"
-    },
-    "data-observatory-measurement": {
-      "title": "Enrich from Data Observatory",
-      "short-title": "Data observatory"
-    },
-    "merge": {
-      "title": "Join columns from 2nd layer",
-      "short-title": "Join columns"
-    },
-    "filter-by-node-column": {
-      "title": "Filter by layer",
-      "short-title": "Filter by layer"
+    "area-of-influence": {
+      "title": "Create areas of influence",
+      "short-title": "AOI"
     },
     "centroid": {
       "title": "Centroid from geometries",
       "short-title": "Centroid"
     },
-    "area-of-influence": {
-      "title": "Create areas of influence",
-      "short-title": "AOI"
-    },
-    "filter-intersection": {
-      "title": "Filter points in polygons",
-      "short-title": "Filter points in polygons"
+    "convex-hull": {
+      "title": "Convex hull",
+      "short-title": "Convex hull"
     },
     "aggregate-intersection": {
       "title": "Aggregate intersection",
       "short-title": "Aggregate intersection"
     },
+    "data-observatory-measurement": {
+      "title": "Enrich from Data Observatory",
+      "short-title": "Data observatory"
+    },
     "filter": {
       "title": "Filter by column value",
       "short-title": "Filter"
+    },
+    "filter-by-node-column": {
+      "title": "Filter by layer",
+      "short-title": "Filter by layer"
+    },
+    "filter-intersection": {
+      "title": "Filter points in polygons",
+      "short-title": "Filter points in polygons"
+    },
+    "georeference": {
+      "title": "Georeference",
+      "short-title": "Georeference"
     },
     "sampling": {
       "title": "Subsample percent of rows",
@@ -62,6 +62,10 @@
     "kmeans": {
       "title": "Calculate clusters of points",
       "short-title": "Clusters"
+    },
+    "merge": {
+      "title": "Join columns from 2nd layer",
+      "short-title": "Join columns"
     },
     "moran-cluster": {
       "title": "Detect outliers and clusters",
