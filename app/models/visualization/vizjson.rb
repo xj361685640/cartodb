@@ -4,10 +4,13 @@ require 'ostruct'
 require_relative '../layer/presenter'
 require_relative '../layer_group/presenter'
 require_relative '../named_map/presenter'
+require_dependency 'carto/api/vizjson3_presenter'
 
 module CartoDB
   module Visualization
     class VizJSON
+      include Carto::Api::ApiTemplates
+
       VIZJSON_VERSION = '0.1.0'
 
       def initialize(visualization, options = {}, configuration = {}, logger = nil)
@@ -64,7 +67,8 @@ module CartoDB
           overlays:       overlays_for(visualization),
           prev:           visualization.prev_id,
           next:           visualization.next_id,
-          transition_options: visualization.transition_options
+          transition_options: visualization.transition_options,
+          datasource:     datasource_vizjson(@options, nil)
         }
 
         auth_tokens = auth_tokens_for(visualization)
@@ -223,6 +227,27 @@ module CartoDB
         visualization.has_password? ? visualization.get_auth_tokens : []
       end
 
+      def datasource_vizjson(options, forced_privacy_version)
+        ds = {
+          user_name: visualization.user.username,
+          maps_api_template: ApplicationHelper.maps_api_template(api_templates_type(options)),
+          stat_tag: visualization.id
+        }
+
+        if display_named_map?(visualization, forced_privacy_version)
+          ds[:template_name] = Carto::NamedMaps::Template.new(Carto::Visualization.find(visualization.id)).name
+        end
+
+        ds
+      end
+
+      def display_named_map?(visualization, forced_privacy_version)
+        forced_privacy_version != :force_anonymous && (visualization.retrieve_named_map? || forced_privacy_version == :force_named)
+      end
+
+      def api_templates_type(options)
+        options.fetch(:https_request, false) ? API_TEMPLATE_PRIVATE : API_TEMPLATE_PUBLIC
+      end
     end
   end
 end
