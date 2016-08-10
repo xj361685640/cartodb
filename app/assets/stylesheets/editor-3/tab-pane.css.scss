@@ -7,3 +7,14 @@
   @include flex-direction(column);
   min-height: 0;
 }
+
+.DatasetList-container--marginBottom {
+  margin-bottom: 80px;
+}
+
+@media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+  /* IE10+ CSS styles go here */
+  .DatasetList-container--marginBottom {
+    padding-bottom: 180px;
+  }
+}
