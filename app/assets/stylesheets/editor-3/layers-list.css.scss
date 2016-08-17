@@ -6,7 +6,8 @@
 @import 'cdb-variables/colors';
 
 .Editor-ListLayer-item {
-  @include transition(opacity 2s ease-in);
+  @include transition(opacity 200ms ease-in, border 200ms ease-in);
+  @include opacity(1);
   box-sizing: border-box;
   position: relative;
   width: auto;
@@ -20,7 +21,7 @@
   cursor: -moz-grab;
 }
 .Editor-ListLayer-item.is-hidden {
-  opacity: 0.64;
+  @include opacity(0.64);
 }
 .Editor-ListLayer-item.is-animated {
   position: relative;
@@ -71,7 +72,6 @@
   background: $cSecondaryBackground;
 }
 .Editor-ListLayer-item:hover {
-  @include transition(border 200ms ease-in);
   border: 1px solid $cHoverLine;
 }
 .Editor-ListLayer-item.last-child {
