@@ -1,7 +1,10 @@
-<span class="CDB-Text CDB-Size-medium u-altTextColor Pagination-label">
+<!--<span class="CDB-Text CDB-Size-medium u-altTextColor Pagination-label">
   Page <%- currentPage %> of <%- pagesCount %>
-</span>
-<ul class="Pagination-list CDB-Text CDB-Size-medium">
+</span>-->
+<ul class="Pagination-list CDB-Text CDB-Size-small is-semibold">
+  <li class="Pagination-listItem">
+    <a class="Pagination-listItemInner Pagination-listItemInner--link"><</a>
+  </li>
   <% m.pagesToDisplay().forEach(function(page) { %>
     <% if (page > 0) { %>
       <li class="Pagination-listItem <%- m.isCurrentPage(page) ? 'is-current' : '' %>">
@@ -13,4 +16,7 @@
       </li>
     <% } %>
   <% }) %>
+  <li class="Pagination-listItem">
+    <a class="Pagination-listItemInner Pagination-listItemInner--link">></a>
+  </li>
 </ul>

@@ -1,6 +1,7 @@
 @import '../variables/mixins';
 @import '../variables/colors';
 @import '../variables/sizes';
+@import 'cdb-variables/colors';
 
 .Pagination {
   @include display-flex();
@@ -30,21 +31,22 @@
   @include display-flex();
   @include justify-content(center, center);
   @include align-items(center, center);
+  padding: 1px 0;
+  border: 1px solid rgba($cSecondaryDark, 0.04);
+  border-radius: 4px;
+  background: $cWhite;
 }
 .Pagination-listItem {
-  border: 1px $cStructure-mainLine solid;
-  border-right-width: 0;
+  border-right: 1px solid rgba($cSecondaryDark, 0.04);
 }
 .Pagination-listItemInner {
-  display: inline-block;
-  padding: 10px 15px;
+  display: block;
+  padding: 8px 12px;
   border: none;
   outline: none;
-  background: $cStructure-mainBkg;
 }
 .Pagination-listItemInner--more {
-  background-color: $cStructure-grayBkg;
-  color: $cTypography-help;
+  color: $cSecondaryText;
 }
 .Pagination-listItem:first-child {
   border-radius: 5px 0 0 5px;
@@ -52,17 +54,10 @@
     border-radius: 5px 0 0 5px;
   }
 }
-.Pagination-listItem:last-child {
-  border-right-width: 1px;
-  border-radius: 0 5px 5px 0;
-  .Pagination-listItemInner {
-    border-radius: 0 5px 5px 0;
-  }
-}
 .Pagination-listItem.is-current,
 .Pagination-listItem.is-current .Pagination-listItemInner--link,
 .Pagination-listItem.is-current .Pagination-listItemInner--link:hover {
-  color: $cTypography-headers;
+  color: $cSecondaryText;
   text-decoration: none;
   cursor: default;
 }
