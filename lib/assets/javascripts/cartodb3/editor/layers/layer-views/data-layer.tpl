@@ -48,11 +48,17 @@
         <% } %>
         <li class="Editor-HeaderInfo-actionsItem CDB-Shape">
           <button class="js-toggle">
-            <% if (isVisible) { %>
-              <i class="CDB-IconFont CDB-IconFont-view u-actionTextColor"></i>
-            <% } else { %>
-              <i class="CDB-IconFont CDB-IconFont-hide u-actionTextColor"></i>
-            <% } %>
+            <svg width="18px" height="12px" viewBox="524 442 18 12" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="Eye-icon <% if (!isVisible) { %>is-hidden<% } %>">
+              <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" transform="translate(525.000000, 443.000000)">
+                <path d="M8,9 C4.6862915,9 2,5.30769231 2,5 C2,4.69230769 4.6862915,1 8,1 C11.3357544,1 13.7635212,5.22119141 13.7663574,5 C13.7684579,4.83618573 11.2285156,9 8,9 Z M11.4465289,3.73891785 C10.2594241,2.63094192 9.08997756,2 8,2 C6.82082808,2 5.57906102,2.60712484 4.42033347,3.63325767 C3.97510038,4.02754215 3.57216137,4.45985677 3.26014312,4.86005603 C3.13744068,5.017436 3.16873228,5.0199729 3.16873228,5.0199729 C3.16873228,5.0199729 3.22798807,5.09870142 3.26014312,5.13994397 C3.57216137,5.54014323 3.97510038,5.97245785 4.42033347,6.36674233 C5.57906102,7.39287516 6.82082808,8 8,8 C9.08997756,8 10.2594241,7.36905808 11.4465289,6.26108215 C11.8644604,5.87100877 12.229157,5.47867082 12.6408287,4.99596966 C12.6711113,4.96046201 11.8952035,4.15768515 11.4465289,3.73891785 Z" id="eye" fill="#1181FB"></path>
+                <g class="Eye-iconLines" stroke-linecap="square">
+                  <path d="M13.5,0.5 L2.5,9.5" id="Line" stroke="#1181FB"></path>
+                  <path d="M11.5,0.5 L0.5,9.5" id="Line" stroke="#FFFFFF"></path>
+                  <path d="M15.5,0.5 L4.5,9.5" id="Line" stroke="#FFFFFF"></path>
+                </g>
+                <path d="M8,6 C7.44857143,6 7,5.55142857 7,5 C7,4.44857143 7.44857143,4 8,4 C8.55142857,4 9,4.44857143 9,5 C9,5.55142857 8.55142857,6 8,6 L8,6 Z" id="eye-circle" fill="#1181FB"></path>
+              </g>
+            </svg>
           </button>
         </li>
         <li class="Editor-HeaderInfo-actionsItem CDB-Shape">
