@@ -38,6 +38,9 @@
 }
 .Pagination-listItem {
   border-right: 1px solid rgba($cSecondaryDark, 0.04);
+  &:last-child {
+    border-right: 0;
+  }
 }
 .Pagination-listItemInner {
   display: block;
@@ -54,10 +57,16 @@
     border-radius: 5px 0 0 5px;
   }
 }
-.Pagination-listItem.is-current,
 .Pagination-listItem.is-current .Pagination-listItemInner--link,
 .Pagination-listItem.is-current .Pagination-listItemInner--link:hover {
   color: $cSecondaryText;
   text-decoration: none;
   cursor: default;
+}
+
+.Pagination-arrow {
+  fill: $cHintText;
+  &.is-active {
+    fill: $cBlue;
+  }
 }
