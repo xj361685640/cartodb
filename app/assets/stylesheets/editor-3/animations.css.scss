@@ -1,12 +1,11 @@
 @import 'cdb-utilities/mixins';
 
-
+.Eye-iconLines {
+  @include opacity(0);
+  @include transform(translateX(15px) translateY(-12px));
+  @include transition(all 150ms ease-in)
+}
 .Eye-icon.is-hidden .Eye-iconLines {
   @include opacity(1);
   @include transform(translateX(0) translateY(0));
-}
-.Eye-iconLines {
-  @include opacity(0);
-  @include transform(translateX(17px) translateY(-12px));
-  @include transition(all 150ms ease-in);
 }
