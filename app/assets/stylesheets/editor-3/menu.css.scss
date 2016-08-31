@@ -62,7 +62,6 @@
 .EditorMenu-navigationLinkHalo {
   @include opacity(0.5);
   @include transform(scale(0));
-  @include transition(all 200ms ease-out);
   position: absolute;
   top: 0;
   right: 0;
@@ -74,9 +73,8 @@
   background: rgba($cMainBg, 0.48);
   z-index: 1;
 }
-
-.EditorMenu-navigationLink:active .EditorMenu-navigationLinkHalo {
-  @include animation(cubic-bezier(0.42, 0, 0.58, 1) 200ms fadeHalo);
+.EditorMenu-navigationItem.is-selected .EditorMenu-navigationLinkHalo {
+  @include animation(cubic-bezier(0.42, 0, 0.58, 1) 200ms fadeHalo 100ms);
 }
 
 .EditorMenu-logo {

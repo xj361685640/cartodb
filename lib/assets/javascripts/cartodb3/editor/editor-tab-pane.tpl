@@ -6,4 +6,6 @@
     </span>
   </button>
 </nav>
-<div class="Editor-content js-content"></div>
+<div class="Editor-content js-content" style="flex-direction: row !important;">
+
+</div>

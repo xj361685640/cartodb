@@ -9,3 +9,37 @@
   @include opacity(1);
   @include transform(translateX(0) translateY(0));
 }
+
+.Editor-content.animation-test {
+  animation: in 200ms ease-in-out;
+}
+
+.Editor-content.animation-testOut {
+  animation: out 200ms ease-in-out;
+  z-index: 10;
+}
+
+
+@keyframes in {
+  0% {
+    transform: translate3d(20px, 0, 0);
+    opacity: 0;
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+
+}
+
+@keyframes out {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(-20px, 0, 0);
+    opacity: 0;
+  }
+}
+

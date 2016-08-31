@@ -18,7 +18,7 @@
 
   &.has-visibility {
     @include opacity(1);
-    @include animation(zoomIn 100ms cubic-bezier(0.42, 0, 0.58, 1));
+    @include animation(zoomIn 200ms cubic-bezier(0.42, 0, 0.58, 1));
     visibility: visible;
   }
 }
@@ -43,7 +43,7 @@
 }
 .CustomList.has-visibility .CustomList-list {
   @include opacity(0);
-  @include animation(150ms cubic-bezier(0.42, 0, 0.58, 1) 150ms forwards changeOpacity);
+  @include animation(100ms cubic-bezier(0.42, 0, 0.58, 1) 100ms forwards changeOpacity);
 }
 
 .CustomList-message {
@@ -91,15 +91,11 @@
 @keyframes zoomIn {
   0% {
     @include opacity(0);
-    @include transform(scale(0));
-    -webkit-transform-origin: right top;
-    transform-origin: right top;
+    @include transform(translateY(-24px));
   }
   100% {
     @include opacity(1);
-    @include transform(scale(1));
-    -webkit-transform-origin: right top;
-    transform-origin: right top;
+    @include transform(translateY(0));
   }
 }
 
