@@ -146,6 +146,10 @@
       "aggregated-value": "Stores the aggregate value for each centroid.",
       "non-aggregated-value": "Contains the count of features considered for each centroid",
       "category": "Stores the category value for each centroid from the source dataset"
+    },
+    "voronoi": {
+      "title": "Voronoi Tessellations",
+      "description": "Description"
     }
   },
 
@@ -225,6 +229,10 @@
     "spatial-markov-trend": {
       "title": "Predict trends and volatility",
       "short-title": "Trends"
+    },
+    "voronoi": {
+      "title": "Voronoi tessellations",
+      "short-title": "Voronoi"
     },
     "source": "Source"
   },
@@ -741,7 +749,11 @@
           "data-observatory-measure": {
             "title": "Enrich from Data Observatory",
             "desc": "Add a new column with contextual demographic and economic measures."
-          }
+          },
+          "voronoi": {
+            "title": "Voronoi Tessellations",
+            "desc": ""
+          },
         }
       },
       "add-widgets": {
@@ -1362,6 +1374,7 @@
         "boundaries": "Boundaries",
         "bounding-box": "Bounding Box",
         "bounding-circle": "Bounding Circle",
+        "buffer-area": "Buffer Area",
         "by": "By",
         "by-bike": "bike",
         "by-car": "car",
@@ -1518,6 +1531,7 @@
         "tune-analysis": "Tune your analysis",
         "tune-centroid": "Tune your centroid",
         "tune-clusters": "Tune your clusters",
+        "tune-params": "Tune your parameters",
         "type": "Type",
         "value": "Value",
         "value-aggregation": "Value aggregation",
