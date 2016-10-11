@@ -147,6 +147,18 @@
 
       <div class="FormAccount-row">
         <div class="FormAccount-rowLabel">
+          <label class="CDB-Text CDB-Size-medium is-semibold u-mainTextColor">Internal dashboard resources</label>
+        </div>
+        <div class="FormAccount-rowData">
+          <%= f.text_field :dashboard_resources, :class => "CDB-InputText CDB-Text FormAccount-input FormAccount-input--med", :placeholder => "default resources (maps, and datasets) org. members will see in their dashboard" %>
+          <div class="FormAccount-rowInfo FormAccount-rowInfo--marginLeft">
+            <p class="CDB-Text CDB-Size-small u-altTextColor">Default resources (maps, and datasets) your users will see in their dashboard</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="FormAccount-row">
+        <div class="FormAccount-rowLabel">
           <label class="CDB-Text CDB-Size-medium is-semibold u-mainTextColor">Default new user quota</label>
         </div>
         <div class="FormAccount-rowData">
