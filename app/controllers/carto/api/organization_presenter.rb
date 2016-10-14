@@ -32,6 +32,8 @@ module Carto
           geocoding_quota:            @organization.geocoding_quota,
           here_isolines_quota:        @organization.here_isolines_quota,
           here_isolines_block_price:  @organization.here_isolines_block_price,
+          mapzen_routing_quota:       @organization.mapzen_routing_quota,
+          mapzen_routing_block_price: @organization.mapzen_routing_block_price,
           obs_snapshot_quota:         @organization.obs_snapshot_quota,
           obs_snapshot_block_price:   @organization.obs_snapshot_block_price,
           obs_general_quota:          @organization.obs_general_quota,
