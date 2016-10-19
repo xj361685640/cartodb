@@ -48,9 +48,5 @@ module Carto
     def soft_obs_general_limit?(user)
       !!user[:soft_obs_general_limit]
     end
-
-    def soft_mapzen_routing_limit?(user)
-      !!user[:soft_mapzen_routing_limit]
-    end
   end
 end
