@@ -17,6 +17,17 @@ RSpec.configure do |config|
   config.include SpecHelperHelpers
   config.include NamedMapsHelper
 
+  if ENV['PROFILE']
+    require 'profile/db'
+    config.before(:suite) do
+      TestProfiler::DB.initialize_profiler
+    end
+
+    config.after(:suite) do
+      puts TestProfiler::DB.operations
+    end
+  end
+
   unless ENV['PARALLEL']
     config.before(:suite) do
       CartoDB::RedisTest.up
