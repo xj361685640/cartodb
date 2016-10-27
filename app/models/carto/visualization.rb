@@ -77,10 +77,6 @@ class Carto::Visualization < ActiveRecord::Base
     super.reject { |c| c.name == 'url_options' }
   end
 
-  def ==(other_visualization)
-    id == other_visualization.id
-  end
-
   def size
     # Only canonical visualizations (Datasets) have a related table and then count against disk quota,
     # but we want to not break and even allow ordering by size multiple types

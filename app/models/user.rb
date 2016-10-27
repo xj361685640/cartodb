@@ -415,6 +415,8 @@ class User < Sequel::Model
   end
 
   def after_destroy
+    super
+
     unless @org_id_for_org_wipe.nil?
       organization = Organization.where(id: @org_id_for_org_wipe).first
       organization.destroy
