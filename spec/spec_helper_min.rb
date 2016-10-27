@@ -10,23 +10,14 @@ ENV['RAILS_ENV'] ||= 'test'
 # INFO: this is the only slow step of the test boot process
 require File.expand_path('../../config/environment', __FILE__)
 require 'rspec/rails'
+require 'profile/db'
+require 'profile/witness'
 
 Resque.inline = true
 
 RSpec.configure do |config|
   config.include SpecHelperHelpers
   config.include NamedMapsHelper
-
-  if ENV['PROFILE']
-    require 'profile/db'
-    config.before(:suite) do
-      TestProfiler::DB.initialize_profiler
-    end
-
-    config.after(:suite) do
-      puts TestProfiler::DB.operations
-    end
-  end
 
   unless ENV['PARALLEL']
     config.before(:suite) do
@@ -40,7 +31,11 @@ RSpec.configure do |config|
       clean_metadata_database
       close_pool_connections
       drop_leaked_test_user_databases
+    end
 
+    if ENV['PROFILE']
+      TestProfiler::Witness.create_witnesses
+      TestProfiler::DB.initialize_profiler
     end
   end
   config.after(:all) do
@@ -54,6 +49,13 @@ RSpec.configure do |config|
   unless ENV['PARALLEL']
     config.after(:suite) do
       CartoDB::RedisTest.down
+    end
+  end
+
+  if ENV['PROFILE']
+    config.after(:suite) do
+      puts 'PROFILE OPS', TestProfiler::DB.operations
+      TestProfiler::Witness.assert_witnesses_alive
     end
   end
 end

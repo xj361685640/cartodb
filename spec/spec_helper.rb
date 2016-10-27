@@ -8,6 +8,8 @@ require 'helpers/unique_names_helper'
 ENV['RAILS_ENV'] ||= 'test'
 require File.expand_path('../../config/environment', __FILE__)
 require 'rspec/rails'
+require 'profile/db'
+require 'profile/witness'
 
 # Requires supporting ruby files with custom matchers and macros, etc,
 # in spec/support/ and its subdirectories.
@@ -35,6 +37,11 @@ RSpec.configure do |config|
       close_pool_connections
       drop_leaked_test_user_databases
     end
+
+    if ENV['PROFILE']
+      TestProfiler::Witness.create_witnesses
+      TestProfiler::DB.initialize_profiler
+    end
   end
 
   config.after(:all) do
@@ -48,6 +55,13 @@ RSpec.configure do |config|
   unless ENV['PARALLEL']
     config.after(:suite) do
       CartoDB::RedisTest.down
+    end
+  end
+
+  if ENV['PROFILE']
+    config.after(:suite) do
+      puts 'PROFILE OPS', TestProfiler::DB.operations
+      TestProfiler::Witness.assert_witnesses_alive
     end
   end
 

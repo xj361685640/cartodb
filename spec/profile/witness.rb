@@ -1,6 +1,7 @@
 module TestProfiler
   module Witness
     def self.create_witnesses
+      @witnesses = []
       to_do = ActiveRecord::Base.descendants.reject { |m| m.name == 'Carto::Organization' }
       (1..10).each do
         Carto::Organization.delete_all rescue nil
@@ -8,14 +9,21 @@ module TestProfiler
       end
 
       ActiveRecord::Base.connection.execute("INSERT INTO organizations (id, name, quota_in_bytes, seats) VALUES ('#{TEST_UUID}', 'witness-org', 0, 0)")
+      @witnesses << Carto::Organization.find(TEST_UUID)
       while to_do.present?
         model = to_do.pop
-        to_do.prepend(model) unless create_witness(model)
+        witness = create_witness(model)
+        if witness
+          @witnesses << witness
+        else
+          to_do.prepend(model)
+        end
       end
     end
 
     def self.assert_witnesses_alive
-      ActiveRecord::Base.descendants.each { |model| model.count.should > 0 }
+      dead_witnesses = @witnesses.reject { |w| w.reload rescue false }
+      raise 'Witnesses have died: ' + dead_witnesses.map { |w| w.class.name }.join(', ') if dead_witnesses.present?
     end
 
     def self.create_witness(model)
@@ -31,7 +39,7 @@ module TestProfiler
           instance.send(k.to_s + '=', v)
         end
         instance.save(validate: false)
-        true
+        instance
       rescue ActiveRecord::InvalidForeignKey
         return false
       end
