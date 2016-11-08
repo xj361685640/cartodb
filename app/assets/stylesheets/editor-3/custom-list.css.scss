@@ -90,3 +90,10 @@
 .Table-columnMenu .CustomList-list--visible .ps-scrollbar-y-rail {
   width: 4px !important;
 }
+
+
+@media (min-height:800px){
+  .CustomList-listWrapper .CustomList-list {
+    max-height: 205px !important;
+  }
+}
