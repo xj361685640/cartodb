@@ -56,7 +56,7 @@ module Carto
       elsif type == 'bubble'
         [build_html_definition_from_bubble, 'html']
       elsif HTML_RAMP_TYPES.include?(type)
-        [build_html_definition_from_ramp_type, 'html']
+        [build_choropleth_definition_from_ramp_type, 'choropleth']
       else
         [nil, nil]
       end
