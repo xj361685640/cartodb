@@ -157,8 +157,6 @@ module Carto
     end
 
     def labels_for_items
-      return @labels_for_items if @labels_for_items
-
       first_item = items.first
       second_item = items.second
 
@@ -170,8 +168,7 @@ module Carto
         right_label = second_item['value']
       end
 
-      @labels_for_items = [left_label, right_label]
-      @labels_for_items
+      [left_label, right_label]
     end
 
     def generate_end_color(start_color, brighten_steps: 4)
