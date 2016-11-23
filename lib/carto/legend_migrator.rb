@@ -85,6 +85,17 @@ module Carto
       { categories: categories }
     end
 
+    def build_choropleth_definition_from_ramp_type
+      left_label, right_label = labels_for_items
+
+      definition = Hash.new
+
+      definition[:left_label] = left_label if left_label.present?
+      definition[:right_label] = right_label if right_label.present?
+
+      definition
+    end
+
     def build_html_definition_from_ramp_type
       left_label, right_label = labels_for_items
       style = style_for_gradient
