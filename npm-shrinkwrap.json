@@ -1,6 +1,6 @@
 {
   "name": "cartodb-ui",
-  "version": "4.5.16",
+  "version": "4.5.23",
   "dependencies": {
     "backbone": {
       "version": "1.2.3",
@@ -1146,13 +1146,13 @@
     },
     "cartodb-deep-insights.js": {
       "version": "0.0.2",
-      "from": "cartodb/deep-insights.js#master",
+      "from": "cartodb/deep-insights.js#vertex-addition",
       "resolved": "git://github.com/cartodb/deep-insights.js.git#18585c6092095935fb40296db5d3d16bb39ce3b0",
       "dependencies": {
         "cartodb.js": {
           "version": "4.0.0-alpha.1",
           "from": "cartodb/cartodb.js#v4",
-          "resolved": "git://github.com/cartodb/cartodb.js.git#73a8d6ac0a71695553105b29a2b219de31d3fda3",
+          "resolved": "git://github.com/cartodb/cartodb.js.git#9acc92e7380f11d749dd8c39b6af47718ccd37f4",
           "dependencies": {
             "backbone-poller": {
               "version": "1.1.3",
@@ -1451,8 +1451,8 @@
     },
     "cartodb.js": {
       "version": "4.0.0-alpha.1",
-      "from": "cartodb/cartodb.js#v4",
-      "resolved": "git://github.com/cartodb/cartodb.js.git#73a8d6ac0a71695553105b29a2b219de31d3fda3",
+      "from": "cartodb/cartodb.js#vertex-addition",
+      "resolved": "git://github.com/cartodb/cartodb.js.git#dfaaaa09eb1a0aabf5ab4c6233eff5d79eee97b9",
       "dependencies": {
         "backbone-poller": {
           "version": "1.1.3",
