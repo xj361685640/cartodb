@@ -86,7 +86,7 @@
                             },
                             "readable-stream": {
                               "version": "2.0.6",
-                              "from": "readable-stream@>=2.0.5 <2.1.0",
+                              "from": "readable-stream@>=2.0.0 <2.1.0",
                               "resolved": "https://registry.npmjs.org/readable-stream/-/readable-stream-2.0.6.tgz",
                               "dependencies": {
                                 "core-util-is": {
@@ -1152,7 +1152,7 @@
         "cartodb.js": {
           "version": "4.0.0-alpha.1",
           "from": "cartodb/cartodb.js#v4",
-          "resolved": "git://github.com/cartodb/cartodb.js.git#9acc92e7380f11d749dd8c39b6af47718ccd37f4",
+          "resolved": "git://github.com/cartodb/cartodb.js.git#37e414575d931b7ffe2f0246f1b1712f00efe9bc",
           "dependencies": {
             "backbone-poller": {
               "version": "1.1.3",
