@@ -645,6 +645,8 @@ CartoDB::Application.routes.draw do
       get 'connectors/:provider_id/connect' => 'connectors#connect', as: :api_v1_connectors_connect
     end
   end
+
+ mount CartoGraphql::Engine => '/graphql'
 end
 
 # rubocop:enable Metrics/LineLength, Style/ExtraSpacing, Style/SingleSpaceBeforeFirstArg

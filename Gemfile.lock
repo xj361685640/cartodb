@@ -14,6 +14,13 @@ GIT
     fake_net_ldap (0.0.1)
       net-ldap
 
+PATH
+  remote: /home/ubuntu/leapfrog/28_graphql_carto_rails_engine/carto_graphql
+  specs:
+    carto_graphql (0.0.1)
+      graphql
+      rails (~> 3.2.22)
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -148,6 +155,7 @@ GEM
       multi_json (>= 1.0.0)
       signet (>= 0.5.0)
       uuidtools (>= 2.1.0)
+    graphql (1.4.0)
     hashie (3.4.3)
     hike (1.2.3)
     hiredis (0.6.1)
@@ -362,6 +370,7 @@ DEPENDENCIES
   bartt-ssl_requirement (~> 1.4.0)
   byebug
   capybara (= 1.1.2)
+  carto_graphql (= 0.0.1)!
   charlock_holmes (= 0.7.2)
   ci_reporter (= 1.8.4)
   compass (= 1.0.3)

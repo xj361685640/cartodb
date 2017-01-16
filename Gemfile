@@ -1,5 +1,7 @@
 source 'http://rubygems.org'
 
+gem 'carto_graphql', 		'0.0.1', :path => "/home/ubuntu/leapfrog/28_graphql_carto_rails_engine/carto_graphql"
+
 gem 'rails',                   '3.2.22'
 
 gem 'rake',                    '0.9.2.2'
