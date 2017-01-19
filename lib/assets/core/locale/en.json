@@ -737,7 +737,8 @@
       },
       "add-asset": {
         "modal-title": "Select marker image",
-        "modal-desc": "Upload your icons or just use our nice selection",
+        "upload-image": "Upload your image",
+        "modal-desc": "or just use our nice selection",
         "set-image": "Set image",
         "your-uploads": "Your uploads",
         "simple-icons": "Simple Icons",
