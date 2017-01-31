@@ -1,3 +1,7 @@
-<div class="AssetItem-label CDB-Text CDB-Size-small u-altTextColor u-upperCase js-asset" title="<%- name %>">
-  <img height="<%- height %>" src="<%- public_url %>" alt="<%- name %>" />
+<div class="AssetItem-label CDB-Text CDB-Size-big <% if (type === 'icon') { %>u-mainTextColor<% } else { %>u-actionTextColor<% } %> u-upperCase js-asset" title="<%- name %>">
+  <% if (type === 'icon') { %>
+    <img height="<%- height %>" src="<%- public_url %>" alt="<%- name %>" />
+  <% } else { %>
+    <%- name %>
+  <% } %>
 </div>

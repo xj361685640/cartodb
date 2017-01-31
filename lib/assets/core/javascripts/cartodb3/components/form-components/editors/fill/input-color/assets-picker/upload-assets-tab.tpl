@@ -1,3 +1,16 @@
+<div class="ImportPanel-header">
+  <h3 class="CDB-Text CDB-Size-large u-mainTextColor u-secondaryTextColor u-bSpace--m">
+    <%- _t('components.modals.add-layer.imports.header-import.upload-file-url', { smart_count: 1 }) %>
+  </h3>
+  <p class="CDB-Text CDB-Size-medium u-altTextColor">
+    <% fileEnabledText = _t('components.modals.add-layer.imports.header-import.select-a-file') +
+    ' <a href="https://carto.com/docs/carto-engine/import-api/importing-geospatial-data/#supported-geospatial-data-formats">' +
+      _t('components.modals.add-layer.imports.header-import.see-all-formats') +
+      '</a>'
+    %>
+    <%= _t('components.modals.add-layer.imports.header-import.paste-url', { fileEnabled: fileEnabledText  }) %>
+  </p>
+</div>
 <div class="Form-row Form-row--centered">
   <div class="Form-rowData Form-rowData--med Form-rowData--noMargin js-dropzone">
     <div class="Form-upload">

@@ -31,5 +31,5 @@
   </div>
 </div>
 <form accept-charset="UTF-8" enctype="multipart/form-data" method="post">
-  <input type="file" accept="image/jpeg,image/jpg,image/gif,image/png,image/svg+xml" id="iconfile" class="js-uploadInput" style="position: absolute; clip: rect(0px 0px 0px 0px); opacity: 0;" multiple="multiple">
+  <input type="file" accept="image/jpeg,image/jpg,image/gif,image/png,image/svg+xml" class="js-fileInput" style="position: absolute; clip: rect(0px 0px 0px 0px); opacity: 0;" multiple="multiple">
 </form>
