@@ -12,7 +12,8 @@
         <ul class="CDB-Size-medium CDB-Text is-semibold js-menu"></ul>
       </nav>
     </div>
-    <div class="Tab-paneContent Publish-modalContent js-content"></div>
+    <div class="Tab-paneContent Publish-modalContent Modal-inner Modal-inner--with-navigation js-content"></div>
+    </div>
   </div>
 
   <div class="Modal-footer">
