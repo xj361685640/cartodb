@@ -27,13 +27,14 @@ module.exports = function (env) {
       ignored: /node_modules/
     },
     entry: {
-      specs: './specRoot.js',
+      // specs: './specRoot.js',
       public_editor: './lib/assets/core/javascripts/cartodb3/public_editor.js',
       dataset: './lib/assets/core/javascripts/cartodb3/dataset.js',
       editor: './lib/assets/core/javascripts/cartodb3/editor.js'
     },
     output: {
-      filename: '[chunkhash].[name].min.js',
+      // filename: '[chunkhash].[name].min.js',
+      filename: '[name].js',
       path: path.resolve(__dirname, 'dist')
     },
     plugins: [
@@ -44,7 +45,7 @@ module.exports = function (env) {
           return module.context && module.context.indexOf('node_modules') !== -1;
         }
       }),
-      new JasmineWebpackPlugin()
+      // new JasmineWebpackPlugin()
       // new UglifyParallel({
       //   uglifyJS: {
       //     beautify: false,
