@@ -1,6 +1,6 @@
 {
   "name": "cartodb-ui",
-  "version": "4.6.57",
+  "version": "4.6.59",
   "dependencies": {
     "backbone": {
       "version": "1.2.3",
@@ -904,7 +904,7 @@
                     },
                     "inherits": {
                       "version": "2.0.3",
-                      "from": "inherits@>=2.0.0 <3.0.0",
+                      "from": "inherits@>=2.0.1 <2.1.0",
                       "resolved": "https://registry.npmjs.org/inherits/-/inherits-2.0.3.tgz"
                     }
                   }
@@ -1089,8 +1089,8 @@
       "dependencies": {
         "cartodb.js": {
           "version": "4.0.0-alpha.1",
-          "from": "cartodb/cartodb.js#v4",
-          "resolved": "git://github.com/cartodb/cartodb.js.git#e86eba8aec0d915604dbe549fb56fdb6590bdcd5",
+          "from": "cartodb/cartodb.js#flyto-vector",
+          "resolved": "git://github.com/cartodb/cartodb.js.git#8122e14bc803bc2f5a8bb67dc33dd4a63bafa35e",
           "dependencies": {
             "backbone-poller": {
               "version": "1.1.3",
@@ -1125,6 +1125,11 @@
                   }
                 }
               }
+            },
+            "d3": {
+              "version": "3.5.17",
+              "from": "d3@3.5.17",
+              "resolved": "https://registry.npmjs.org/d3/-/d3-3.5.17.tgz"
             },
             "tangram.cartodb": {
               "version": "0.3.0",
@@ -1423,8 +1428,8 @@
     },
     "cartodb.js": {
       "version": "4.0.0-alpha.1",
-      "from": "cartodb/cartodb.js#v4",
-      "resolved": "git://github.com/cartodb/cartodb.js.git#e86eba8aec0d915604dbe549fb56fdb6590bdcd5",
+      "from": "cartodb/cartodb.js#flyto-vector",
+      "resolved": "git://github.com/cartodb/cartodb.js.git#8122e14bc803bc2f5a8bb67dc33dd4a63bafa35e",
       "dependencies": {
         "backbone-poller": {
           "version": "1.1.3",
