@@ -1,6 +1,6 @@
 {
   "name": "cartodb-ui",
-  "version": "4.6.74",
+  "version": "4.6.79",
   "dependencies": {
     "backbone": {
       "version": "1.2.3",
@@ -904,7 +904,7 @@
                     },
                     "inherits": {
                       "version": "2.0.3",
-                      "from": "inherits@>=2.0.0 <3.0.0",
+                      "from": "inherits@>=2.0.1 <2.1.0",
                       "resolved": "https://registry.npmjs.org/inherits/-/inherits-2.0.3.tgz"
                     }
                   }
@@ -1084,13 +1084,13 @@
     },
     "cartodb-deep-insights.js": {
       "version": "0.0.2",
-      "from": "cartodb/deep-insights.js#master",
-      "resolved": "git://github.com/cartodb/deep-insights.js.git#7f79842bcf9a9354f38ff13ac576baabee63bb62",
+      "from": "cartodb/deep-insights.js#cartodb-instantiation-change",
+      "resolved": "git://github.com/cartodb/deep-insights.js.git#74dc9e053fb0c6e846c154182ff53fba20a9ed06",
       "dependencies": {
         "cartodb.js": {
           "version": "4.0.0-alpha.1",
-          "from": "cartodb/cartodb.js#v4",
-          "resolved": "git://github.com/cartodb/cartodb.js.git#e355ae1a16db3602a3564f80f2449f8d9dacf1e6",
+          "from": "cartodb/cartodb.js#render-view-after-first-reload",
+          "resolved": "git://github.com/cartodb/cartodb.js.git#9db7d49f7f94f3dc019d34cba152a3c66ae440b3",
           "dependencies": {
             "backbone-poller": {
               "version": "1.1.3",
@@ -1126,10 +1126,15 @@
                 }
               }
             },
+            "d3": {
+              "version": "3.5.17",
+              "from": "d3@3.5.17",
+              "resolved": "https://registry.npmjs.org/d3/-/d3-3.5.17.tgz"
+            },
             "tangram.cartodb": {
-              "version": "0.3.0",
+              "version": "0.3.1",
               "from": "cartodb/tangram.cartodb#master",
-              "resolved": "git://github.com/cartodb/tangram.cartodb.git#f973792e341110835393521480672670e2e27dee",
+              "resolved": "git://github.com/cartodb/tangram.cartodb.git#538136b79f0f401ba806d75fe2f9df534bb99017",
               "dependencies": {
                 "babel-runtime": {
                   "version": "6.18.0",
@@ -1423,8 +1428,8 @@
     },
     "cartodb.js": {
       "version": "4.0.0-alpha.1",
-      "from": "cartodb/cartodb.js#v4",
-      "resolved": "git://github.com/cartodb/cartodb.js.git#e355ae1a16db3602a3564f80f2449f8d9dacf1e6",
+      "from": "cartodb/cartodb.js#render-view-after-first-reload",
+      "resolved": "git://github.com/cartodb/cartodb.js.git#9db7d49f7f94f3dc019d34cba152a3c66ae440b3",
       "dependencies": {
         "backbone-poller": {
           "version": "1.1.3",
@@ -1466,9 +1471,9 @@
           "resolved": "https://registry.npmjs.org/d3/-/d3-3.5.17.tgz"
         },
         "tangram.cartodb": {
-          "version": "0.3.0",
+          "version": "0.3.1",
           "from": "cartodb/tangram.cartodb#master",
-          "resolved": "git://github.com/cartodb/tangram.cartodb.git#f973792e341110835393521480672670e2e27dee",
+          "resolved": "git://github.com/cartodb/tangram.cartodb.git#538136b79f0f401ba806d75fe2f9df534bb99017",
           "dependencies": {
             "babel-runtime": {
               "version": "6.18.0",
