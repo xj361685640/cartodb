@@ -173,7 +173,7 @@
     "node": "6.9.2"
   },
   "scripts": {
-    "test": "echo \"Run 'grunt test' to run specs through command line.\"",
+    "test": "jest",
     "preupdate-internal-deps": "echo 'DEPRECATED TASK, use `npm run-script update-internal-deps` instead'",
     "update-internal-deps": "rm -rf node_modules && npm install --production --no-shrinkwrap && npm dedupe && npm prune && npm shrinkwrap && npm install",
     "branch-files": "node lib/build/branchFiles/branchFiles.js",
@@ -181,5 +181,15 @@
     "build": "NODE_ENV=production webpack -p --config webpack.prod.config.js",
     "build:stats": "webpack --env.stats --progress --config webpack.dev.config.js",
     "start": "webpack --progress --watch --config webpack.dev.config.js"
+  },
+  "jest": {
+    "moduleNameMapper": {
+      "tipsy": "<rootDir>/vendor/assets/javascripts/jquery.tipsy.js"
+    },
+    "transform": {
+      "\\.tpl$": "<rootDir>/lib/assets/core/javascripts/cartodb3/helpers/tpl-parser.js",
+      "\\.mustache$": "<rootDir>/lib/assets/core/javascripts/cartodb3/helpers/mustache-parser.js"
+    },
+    "setupFiles": ["<rootDir>/lib/assets/core/javascripts/cartodb3/helpers/setup-jest.js"]
   }
 }
