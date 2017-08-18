@@ -31,9 +31,10 @@ module.exports = env => {
       modules: [
         resolve(__dirname, 'node_modules'),
         resolve(__dirname, 'lib/assets/node_modules')
-      ]
+      ],
+      extensions: ['.ts', '.js', '.tsx']
     },
-    devtool: 'eval-source-map',
+    devtool: 'source-map',
     plugins: [
       stats(env) ? new BundleAnalyzerPlugin({
         analyzerMode: 'static'
@@ -95,6 +96,18 @@ module.exports = env => {
               }
             }
           }
+        },
+        {
+          test: /\.js$/,
+          loader: 'babel-loader',
+          include: [resolve(__dirname, 'node_modules/tangram.cartodb')],
+          options: {
+            presets: ['es2015']
+          }
+        },
+        {
+          test: /\.tsx?$/,
+          loader: 'ts-loader'
         },
         {
           test: /\.tpl$/,

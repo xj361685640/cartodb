@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "sourceMap": true
+    },
+
+    "exclude": [
+      "node_modules",
+      "lib/assets/javascripts/cdb"
+    ]
+}

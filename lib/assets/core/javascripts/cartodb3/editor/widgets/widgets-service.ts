@@ -1,5 +1,5 @@
 var removeWidgetConfirmationTemplate = require('./delete-widget-confirmation.tpl');
-var ConfirmationView = require('../../components/modals/confirmation/modal-confirmation-view');
+var ConfirmationView : any = require('../../components/modals/confirmation/modal-confirmation-view');
 
 var service = (function () {
   return {

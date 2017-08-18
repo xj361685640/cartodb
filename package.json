@@ -91,6 +91,8 @@
     "source-map-support": "0.4.0",
     "stringify": "5.1.0",
     "tpl-loader": "CartoDB/tpl-loader#master",
+    "ts-loader": "^2.3.3",
+    "typescript": "^2.4.2",
     "uglify-js": "2.7.x",
     "watchify": "3.7.0",
     "webpack-bundle-analyzer": "^2.4.0",
@@ -188,6 +190,6 @@
     "build": "NODE_ENV=production webpack --config webpack.prod.config.js",
     "build:stats": "webpack --env.stats --progress --config webpack.dev.config.js",
     "start": "grunt watch:css & webpack --progress --watch --config webpack.dev.config.js",
-    "dev": "webpack --progress --config webpack.dev.config.js"
+    "dev": "webpack --progress --watch --config webpack.dev.config.js"
   }
 }
