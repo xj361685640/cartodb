@@ -1,6 +1,6 @@
 {
   "name": "cartodb-ui",
-  "version": "4.10.6-3.tangram",
+  "version": "4.10.6-3.tangram-staging.3",
   "dependencies": {
     "accessory": {
       "version": "1.0.1",
@@ -332,8 +332,8 @@
     },
     "cartodb-deep-insights.js": {
       "version": "0.4.8",
-      "from": "cartodb/deep-insights.js#tangram-platform-limits",
-      "resolved": "git://github.com/cartodb/deep-insights.js.git#2ea564e2a9d3d5f806b976b6d78ea6946a1e69e8",
+      "from": "cartodb/deep-insights.js#v0.4.8",
+      "resolved": "git://github.com/cartodb/deep-insights.js.git#f91af73dad1a2e135a6346faba349bdacb96320a",
       "dependencies": {
         "node-polyglot": {
           "version": "2.2.2",
@@ -349,7 +349,7 @@
     },
     "cartodb.js": {
       "version": "4.0.0-alpha.21",
-      "from": "cartodb/cartodb.js#tangram-platform-limits",
+      "from": "cartodb/cartodb.js#v4.0.0-alpha.21",
       "resolved": "git://github.com/cartodb/cartodb.js.git#d22bf18834543fdb2cc62771f2f692ace85f21d3"
     },
     "center-align": {
@@ -2133,7 +2133,7 @@
     "tangram": {
       "version": "0.13.2",
       "from": "cartodb/tangram#trigger-limit-error",
-      "resolved": "git://github.com/cartodb/tangram.git#8e78fb4b1b79ba55d1e6f49345318c747792850a"
+      "resolved": "git://github.com/cartodb/tangram.git#5e242dd9f99900e7adee7f5b324cca5806216496"
     },
     "tangram-cartocss": {
       "version": "0.9.9",
