@@ -110,9 +110,9 @@
       "resolved": "https://registry.npmjs.org/astw/-/astw-2.2.0.tgz"
     },
     "async": {
-      "version": "2.5.0",
+      "version": "2.6.0",
       "from": "async@>=2.1.2 <3.0.0",
-      "resolved": "https://registry.npmjs.org/async/-/async-2.5.0.tgz"
+      "resolved": "https://registry.npmjs.org/async/-/async-2.6.0.tgz"
     },
     "async-each": {
       "version": "1.0.1",
@@ -331,15 +331,9 @@
       "resolved": "https://registry.npmjs.org/cartocolor/-/cartocolor-4.0.0.tgz"
     },
     "cartodb-deep-insights.js": {
-<<<<<<< HEAD
-      "version": "0.4.8",
-      "from": "cartodb/deep-insights.js#v0.4.8",
-      "resolved": "git://github.com/cartodb/deep-insights.js.git#f91af73dad1a2e135a6346faba349bdacb96320a",
-=======
       "version": "0.4.7",
       "from": "cartodb/deep-insights.js#remove-wax",
       "resolved": "git://github.com/cartodb/deep-insights.js.git#896c7e17b77ac87e3c72cc4ef5dfa37fcf137ae8",
->>>>>>> Update deps
       "dependencies": {
         "node-polyglot": {
           "version": "2.2.2",
@@ -354,15 +348,9 @@
       "resolved": "https://registry.npmjs.org/cartodb-pecan/-/cartodb-pecan-0.2.0.tgz"
     },
     "cartodb.js": {
-<<<<<<< HEAD
-      "version": "4.0.0-alpha.21",
-      "from": "cartodb/cartodb.js#v4.0.0-alpha.21",
-      "resolved": "git://github.com/cartodb/cartodb.js.git#d22bf18834543fdb2cc62771f2f692ace85f21d3"
-=======
       "version": "4.0.0-alpha.19",
       "from": "cartodb/cartodb.js#1857-add-webpack",
       "resolved": "git://github.com/cartodb/cartodb.js.git#0623a348173be91fd3e536c6a3ae65986ce7b8fb"
->>>>>>> Update deps
     },
     "center-align": {
       "version": "0.1.3",
@@ -2250,9 +2238,9 @@
       "resolved": "https://registry.npmjs.org/typedarray/-/typedarray-0.0.6.tgz"
     },
     "uglify-js": {
-      "version": "3.1.7",
+      "version": "3.1.8",
       "from": "uglify-js@>=3.1.0 <3.2.0",
-      "resolved": "https://registry.npmjs.org/uglify-js/-/uglify-js-3.1.7.tgz",
+      "resolved": "https://registry.npmjs.org/uglify-js/-/uglify-js-3.1.8.tgz",
       "dependencies": {
         "source-map": {
           "version": "0.6.1",
